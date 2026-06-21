@@ -1,3 +1,44 @@
+import { BrowserWindowConstructorOptions } from 'electron';
+
+// ===== 路由配置 =====
+
+/** 一级路由（对应插件自身） */
+export interface PluginRoute {
+  /** 路由路径，如 '/notepad' */
+  path: string;
+  /** 显示名称 */
+  title: string;
+  /** 图标（可选，用于导航栏） */
+  icon?: string;
+  /** 排序权重，越小越靠前 */
+  order?: number;
+}
+
+/** 二级路由（运行时动态注入） */
+export interface SubRoute {
+  /** 路由路径，如 '/notepad/settings' */
+  path: string;
+  /** 显示名称 */
+  title: string;
+  /** 图标 */
+  icon?: string;
+  /** 排序权重 */
+  order?: number;
+}
+
+// ===== IPC 注册 =====
+
+/** 插件 IPC Handler 定义 */
+export interface IpcHandler {
+  /** 通道名，如 'notepad:list' */
+  channel: string;
+  /** Handler 函数（参数通过 args 数组传入，需自行断言类型） */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handler: (...args: any[]) => any;
+}
+
+// ===== 插件宿主 API =====
+
 /** 插件宿主（基座）提供的 API */
 export interface TToolHost {
   /** 基座就绪回调 */
@@ -6,6 +47,23 @@ export interface TToolHost {
   emit(event: string, ...args: unknown[]): void;
   /** 监听其他插件的消息 */
   on(event: string, callback: (...args: unknown[]) => void): void;
+  /** 运行时注入二级路由到主进程 */
+  registerSubRoutes(parentPath: string, routes: SubRoute[]): void;
+  /** 注销二级路由 */
+  unregisterSubRoutes(parentPath: string, paths?: string[]): void;
+}
+
+// ===== 插件定义 =====
+
+/** 插件独立窗口配置 */
+export interface PluginWindowConfig {
+  /** 窗口标题 */
+  title?: string;
+  /** 窗口尺寸 */
+  width?: number;
+  height?: number;
+  /** 其他 BrowserWindow 构造选项 */
+  options?: Omit<BrowserWindowConstructorOptions, 'width' | 'height' | 'title'>;
 }
 
 /** 插件定义 */
@@ -16,8 +74,37 @@ export interface TToolPlugin {
   version: string;
   /** 插件描述 */
   description?: string;
+  /** 一级路由配置（插件创建时声明，写入配置文件） */
+  route: PluginRoute;
+  /** 独立窗口配置（可选，不配置则在主窗口内展示） */
+  window?: PluginWindowConfig;
+  /** IPC Handler 列表（插件激活时注册到主进程） */
+  ipcHandlers?: IpcHandler[];
   /** 插件激活时调用 */
   activate(host: TToolHost): void;
   /** 插件停用时调用 */
   deactivate?(): void;
+}
+
+// ===== 插件注册配置（由 main 管理） =====
+
+/** 插件注册条目 */
+export interface PluginRegistryEntry {
+  /** 插件包名，如 '@ttool/plugin-notepad' */
+  packageName: string;
+  /** 插件名称 */
+  name: string;
+  /** 一级路由 */
+  route: PluginRoute;
+  /** 是否启用 */
+  enabled: boolean;
+  /** 是否独立窗口 */
+  standalone: boolean;
+  /** 独立窗口配置 */
+  window?: PluginWindowConfig;
+}
+
+/** 插件注册表 */
+export interface PluginRegistry {
+  plugins: PluginRegistryEntry[];
 }

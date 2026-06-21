@@ -1,0 +1,17 @@
+{
+  "name": "@ttool/plugin-notepad",
+  "version": "0.1.0",
+  "description": "TTool 记事本插件",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@ttool/plugin-types": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}

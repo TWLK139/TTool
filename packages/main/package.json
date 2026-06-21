@@ -11,7 +11,11 @@
     "dist": "electron-builder",
     "clean": "rimraf dist"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@ttool/plugin-types": "workspace:*",
+    "@ttool/plugin-notepad": "workspace:*",
+    "@ttool/plugin-example": "workspace:*"
+  },
   "devDependencies": {
     "electron": "catalog:",
     "electron-builder": "catalog:",
