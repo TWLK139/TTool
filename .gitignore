@@ -1,0 +1,25 @@
+node_modules/
+dist/
+out/
+*.js.map
+*.d.ts.map
+
+# Turbo
+.turbo/
+
+# electron-builder
+/dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local

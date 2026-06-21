@@ -1,0 +1,49 @@
+{
+  "name": "@ttool/main",
+  "version": "0.1.0",
+  "description": "TTool Electron 主进程（基座）",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsc && electron .",
+    "build": "tsc",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "catalog:",
+    "electron-builder": "catalog:",
+    "typescript": "catalog:"
+  },
+  "build": {
+    "appId": "com.ttool.app",
+    "productName": "TTool",
+    "directories": {
+      "output": "../../dist"
+    },
+    "files": [
+      "dist/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../renderer/dist",
+        "to": "renderer/dist"
+      }
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

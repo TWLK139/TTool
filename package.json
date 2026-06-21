@@ -1,0 +1,23 @@
+{
+  "name": "ttool",
+  "version": "0.1.0",
+  "description": "基于 Electron + React + TypeScript 构建的桌面日常工具集",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "dev:renderer": "turbo dev --filter=@ttool/renderer",
+    "dev:main": "turbo dev --filter=@ttool/main",
+    "build:renderer": "turbo build --filter=@ttool/renderer",
+    "build:main": "turbo build --filter=@ttool/main",
+    "pack": "turbo build --filter=@ttool/main --filter=@ttool/renderer && pnpm --filter @ttool/main run pack",
+    "dist": "turbo build --filter=@ttool/main --filter=@ttool/renderer && pnpm --filter @ttool/main run dist",
+    "clean": "turbo clean"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0",
+    "typescript": "catalog:"
+  },
+  "packageManager": "pnpm@11.8.0",
+  "license": "MIT"
+}

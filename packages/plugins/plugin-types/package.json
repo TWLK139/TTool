@@ -1,0 +1,15 @@
+{
+  "name": "@ttool/plugin-types",
+  "version": "0.1.0",
+  "description": "TTool 插件类型定义",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}
