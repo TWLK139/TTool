@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   MDXEditor,
   headingsPlugin,
@@ -51,12 +52,108 @@ function getFileNameFromHash(): string | null {
   return null;
 }
 
-/** 文字颜色选择器按钮 */
+/** 预设颜色 */
+const PRESET_COLORS = [
+  '#000000', '#434343', '#666666', '#999999', '#cccccc',
+  '#ff0000', '#ff6600', '#ffcc00', '#33cc33', '#0099ff',
+  '#6633cc', '#cc0066', '#ff9999', '#ffcc99', '#ffff99',
+  '#99ff99', '#99ccff', '#cc99ff', '#ff66cc', '#996633',
+];
+
+/** 通用色板弹窗（通过 Portal 挂载到 body，避免被 overflow:hidden 裁切） */
+function ColorPalettePopup({
+  anchorRef,
+  activeColor,
+  customColor,
+  onCustomColorChange,
+  onApply,
+  onClose,
+}: {
+  anchorRef: React.RefObject<HTMLElement | null>;
+  activeColor: string | null;
+  customColor: string;
+  onCustomColorChange: (c: string) => void;
+  onApply: (c: string) => void;
+  onClose: () => void;
+}) {
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
+  // 计算弹窗位置
+  useEffect(() => {
+    if (!anchorRef.current) return;
+    const rect = anchorRef.current.getBoundingClientRect();
+    setPos({ top: rect.bottom + 4, left: rect.left });
+  }, [anchorRef]);
+
+  // 点击外部关闭
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest('.color-palette-popup')) {
+        onClose();
+      }
+    };
+    // 延迟绑定，避免当前 click 事件立即触发关闭
+    const id = setTimeout(() => document.addEventListener('mousedown', handler), 0);
+    return () => { clearTimeout(id); document.removeEventListener('mousedown', handler); };
+  }, [onClose]);
+
+  if (!pos) return null;
+
+  return createPortal(
+    <div className="color-palette-popup" style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 9999 }}>
+      <div className="color-palette-grid">
+        {PRESET_COLORS.map((c) => (
+          <button
+            key={c}
+            className={`color-swatch${activeColor === c ? ' active' : ''}`}
+            style={{ backgroundColor: c }}
+            onClick={() => { onApply(c); onClose(); }}
+            title={c}
+          />
+        ))}
+      </div>
+      <div className="color-custom-row">
+        <input
+          type="color"
+          value={customColor}
+          onChange={(e) => onCustomColorChange(e.target.value)}
+        />
+        <button className="color-custom-apply" onClick={() => { onApply(customColor); onClose(); }}>应用</button>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+/** 文字颜色选择器 */
 function ColorPickerButton() {
   const rootEditor = useCellValue(rootEditor$);
-  const [color, setColor] = useState('#ff0000');
+  const [open, setOpen] = useState(false);
+  const [customColor, setCustomColor] = useState('#ff0000');
+  const [activeColor, setActiveColor] = useState<string | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
-  const applyColor = useCallback(() => {
+  // 监听选区变化，更新当前颜色状态
+  useEffect(() => {
+    if (!rootEditor) return;
+    return rootEditor.registerUpdateListener(({ editorState }) => {
+      editorState.read(() => {
+        const selection = $getSelection();
+        if ($isRangeSelection(selection)) {
+          const node = selection.getNodes()[0];
+          if (node && 'getStyle' in node) {
+            const style = (node as any).getStyle() as string;
+            const m = style.match(/(?:^|;)\s*color\s*:\s*([^;]+)/i);
+            setActiveColor(m ? m[1].trim() : null);
+          } else {
+            setActiveColor(null);
+          }
+        }
+      });
+    });
+  }, [rootEditor]);
+
+  const applyColor = useCallback((color: string) => {
     if (!rootEditor) return;
     rootEditor.update(() => {
       const selection = $getSelection();
@@ -64,48 +161,93 @@ function ColorPickerButton() {
         $patchStyleText(selection, { color });
       }
     });
-  }, [rootEditor, color]);
+    setActiveColor(color);
+  }, [rootEditor]);
 
   return (
-    <div className="color-picker-btn" title="文字颜色">
-      <input
-        type="color"
-        value={color}
-        onChange={(e) => setColor(e.target.value)}
-      />
-      <button className="color-picker-apply" onClick={applyColor}>
-        <span className="color-indicator" style={{ color }}>A</span>
+    <>
+      <button
+        ref={btnRef}
+        className={`color-trigger-btn${activeColor ? ' has-color' : ''}`}
+        onClick={() => setOpen(!open)}
+        title="文字颜色"
+      >
+        <span className="color-trigger-label">A</span>
+        <span className="color-trigger-bar" style={{ backgroundColor: activeColor || 'currentColor' }} />
       </button>
-    </div>
+      {open && (
+        <ColorPalettePopup
+          anchorRef={btnRef}
+          activeColor={activeColor}
+          customColor={customColor}
+          onCustomColorChange={setCustomColor}
+          onApply={applyColor}
+          onClose={() => setOpen(false)}
+        />
+      )}
+    </>
   );
 }
 
-/** 背景色选择器按钮 */
+/** 背景色选择器 */
 function BgColorPickerButton() {
   const rootEditor = useCellValue(rootEditor$);
-  const [bgColor, setBgColor] = useState('#ffff00');
+  const [open, setOpen] = useState(false);
+  const [customColor, setCustomColor] = useState('#ffff00');
+  const [activeBg, setActiveBg] = useState<string | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
-  const applyBgColor = useCallback(() => {
+  useEffect(() => {
+    if (!rootEditor) return;
+    return rootEditor.registerUpdateListener(({ editorState }) => {
+      editorState.read(() => {
+        const selection = $getSelection();
+        if ($isRangeSelection(selection)) {
+          const node = selection.getNodes()[0];
+          if (node && 'getStyle' in node) {
+            const style = (node as any).getStyle() as string;
+            const m = style.match(/(?:^|;)\s*background-color\s*:\s*([^;]+)/i);
+            setActiveBg(m ? m[1].trim() : null);
+          } else {
+            setActiveBg(null);
+          }
+        }
+      });
+    });
+  }, [rootEditor]);
+
+  const applyBgColor = useCallback((color: string) => {
     if (!rootEditor) return;
     rootEditor.update(() => {
       const selection = $getSelection();
       if ($isRangeSelection(selection)) {
-        $patchStyleText(selection, { 'background-color': bgColor });
+        $patchStyleText(selection, { 'background-color': color });
       }
     });
-  }, [rootEditor, bgColor]);
+    setActiveBg(color);
+  }, [rootEditor]);
 
   return (
-    <div className="color-picker-btn" title="背景颜色">
-      <input
-        type="color"
-        value={bgColor}
-        onChange={(e) => setBgColor(e.target.value)}
-      />
-      <button className="color-picker-apply" onClick={applyBgColor}>
-        <span className="color-indicator" style={{ backgroundColor: bgColor }}>A</span>
+    <>
+      <button
+        ref={btnRef}
+        className={`color-trigger-btn bgcolor-trigger${activeBg ? ' has-color' : ''}`}
+        onClick={() => setOpen(!open)}
+        title="背景颜色"
+      >
+        <span className="color-trigger-label" style={{ backgroundColor: activeBg || 'transparent' }}>A</span>
       </button>
-    </div>
+      {open && (
+        <ColorPalettePopup
+          anchorRef={btnRef}
+          activeColor={activeBg}
+          customColor={customColor}
+          onCustomColorChange={setCustomColor}
+          onApply={applyBgColor}
+          onClose={() => setOpen(false)}
+        />
+      )}
+    </>
   );
 }
 

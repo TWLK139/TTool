@@ -218,63 +218,138 @@
 }
 
 /* ---- 颜色选择器 ---- */
-.color-picker-btn {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  padding: 2px 4px;
+
+/* 工具栏触发按钮 */
+.color-trigger-btn {
+  width: 28px;
+  height: 28px;
   border: 1px solid var(--border-muted);
   border-radius: 4px;
   background: var(--bg-input);
   cursor: pointer;
-  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 4px;
+  gap: 1px;
+  transition: background 0.2s;
 }
 
-.color-picker-btn:hover {
+.color-trigger-btn:hover {
   background: var(--bg-input-hover);
 }
 
-.color-picker-btn input[type="color"] {
-  width: 20px;
-  height: 20px;
+.color-trigger-btn.has-color {
+  border-color: var(--accent);
+}
+
+.color-trigger-label {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-secondary);
+}
+
+.bgcolor-trigger .color-trigger-label {
+  padding: 0 2px;
+  border-radius: 1px;
+  color: var(--text-secondary);
+}
+
+.color-trigger-bar {
+  width: 100%;
+  height: 3px;
+  border-radius: 1px;
+}
+
+/* 弹出色板（已通过 Portal 挂载到 body，position: fixed 由内联样式控制） */
+.color-palette-popup {
+  padding: 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.color-palette-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.color-swatch {
+  width: 22px;
+  height: 22px;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
   padding: 0;
-  border: none;
+  transition: transform 0.1s, border-color 0.15s;
+}
+
+.color-swatch:hover {
+  transform: scale(1.15);
+  border-color: var(--text-muted);
+}
+
+.color-swatch.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* 浅色色块加边框以区分背景 */
+.color-swatch[style*="rgb(204"] ,
+.color-swatch[style*="rgb(255"] ,
+.color-swatch[style*="rgb(153"] ,
+.color-swatch[style*="#cc"] ,
+.color-swatch[style*="#ff"] ,
+.color-swatch[style*="#99"] {
+  outline: 1px solid var(--border-muted);
+  outline-offset: -1px;
+}
+
+.color-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-top: 1px solid var(--border-muted);
+  padding-top: 8px;
+}
+
+.color-custom-row input[type="color"] {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--border-muted);
+  border-radius: 4px;
   cursor: pointer;
   background: none;
 }
 
-.color-picker-btn input[type="color"]::-webkit-color-swatch-wrapper {
+.color-custom-row input[type="color"]::-webkit-color-swatch-wrapper {
   padding: 2px;
 }
 
-.color-picker-btn input[type="color"]::-webkit-color-swatch {
-  border: 1px solid var(--border-muted);
-  border-radius: 2px;
-}
-
-.color-picker-apply {
-  width: 22px;
-  height: 22px;
+.color-custom-row input[type="color"]::-webkit-color-swatch {
   border: none;
-  background: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  font-size: 13px;
-  font-weight: 600;
   border-radius: 2px;
 }
 
-.color-picker-apply:hover {
-  background: var(--bg-input-hover);
+.color-custom-apply {
+  padding: 2px 10px;
+  border: 1px solid var(--border-muted);
+  border-radius: 4px;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-.color-indicator {
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1;
+.color-custom-apply:hover {
+  background: var(--bg-input-hover);
 }
 
 .color-clear-btn {
