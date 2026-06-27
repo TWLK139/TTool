@@ -36,6 +36,16 @@ interface NoteItem {
   createdAt: number;
 }
 
+/** 从 URL hash 解析当前笔记 fileName，如 /notepad/xxx.md -> xxx.md */
+function getFileNameFromHash(): string | null {
+  const hash = window.location.hash.slice(1); // 去掉 #
+  const prefix = '/notepad/';
+  if (hash.startsWith(prefix)) {
+    return decodeURIComponent(hash.slice(prefix.length));
+  }
+  return null;
+}
+
 export default function Notepad() {
   const [notes, setNotes] = useState<NoteItem[]>([]);
   const [activeNote, setActiveNote] = useState<NoteItem | null>(null);
@@ -53,39 +63,31 @@ export default function Notepad() {
     return list;
   }, []);
 
-  useEffect(() => {
-    loadNotes().then((list) => {
-      if (list.length > 0 && !activeNote) {
-        selectNote(list[0]);
-      }
-    });
+  const syncRoutes = useCallback(async () => {
+    await window.ttool.invoke('notepad:sync-routes');
   }, []);
 
-  const selectNote = async (note: NoteItem) => {
+  const selectNote = useCallback(async (note: NoteItem) => {
     if (activeNoteRef.current?.fileName === note.fileName) return;
     if (saveTimerRef.current) {
       clearTimeout(saveTimerRef.current);
       saveTimerRef.current = null;
     }
-    // 标记正在切换，屏蔽 onChange 期间的自动保存
     switchingRef.current = true;
     if (activeNoteRef.current) {
       await saveCurrentNote();
     }
-    // 先异步加载新笔记内容，再同步更新 state，避免中间状态
     const text = (await window.ttool.invoke('notepad:read', note.fileName)) as string;
     activeNoteRef.current = note;
     contentRef.current = text;
-    // 同时更新 activeNote 和 content，确保 MDXEditor 挂载时拿到正确内容
     setActiveNote(note);
     setContent(text);
-    // 延迟解除切换标记，确保 MDXEditor 完成初始化后的 onChange 不被误判
     setTimeout(() => {
       switchingRef.current = false;
     }, 0);
-  };
+  }, []);
 
-  const saveCurrentNote = async () => {
+  const saveCurrentNote = useCallback(async () => {
     if (!activeNoteRef.current) return;
     setIsSaving(true);
     try {
@@ -94,17 +96,51 @@ export default function Notepad() {
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [loadNotes]);
+
+  // 初始化：加载笔记列表，根据 URL hash 选择笔记
+  useEffect(() => {
+    loadNotes().then((list) => {
+      const fileName = getFileNameFromHash();
+      if (fileName) {
+        const match = list.find((n) => n.fileName === fileName);
+        if (match) {
+          selectNote(match);
+          return;
+        }
+      }
+      // 没有匹配的 hash 或无 hash，选中第一个笔记并更新 hash
+      if (list.length > 0) {
+        selectNote(list[0]);
+        window.location.hash = `/notepad/${encodeURIComponent(list[0].fileName)}`;
+      }
+    });
+  }, []);
+
+  // 监听 hash 变化，切换笔记
+  useEffect(() => {
+    const handleHashChange = () => {
+      const fileName = getFileNameFromHash();
+      if (!fileName) return;
+      // 找到对应的笔记
+      loadNotes().then((list) => {
+        const match = list.find((n) => n.fileName === fileName);
+        if (match) {
+          selectNote(match);
+        }
+      });
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [selectNote, loadNotes]);
 
   const handleContentChange = (newContent: string) => {
-    // 切换笔记期间，MDXEditor 初始化触发的 onChange 应被忽略
     if (switchingRef.current) return;
     setContent(newContent);
     contentRef.current = newContent;
     if (saveTimerRef.current) {
       clearTimeout(saveTimerRef.current);
     }
-    // 在创建计时器时捕获当前 fileName，避免延迟读取 ref 导致保存到错误文件
     const currentFileName = activeNoteRef.current?.fileName;
     saveTimerRef.current = setTimeout(() => {
       if (currentFileName) {
@@ -126,6 +162,7 @@ export default function Notepad() {
     const now = new Date();
     const name = `笔记 ${now.getMonth() + 1}-${now.getDate()} ${now.getHours()}.${String(now.getMinutes()).padStart(2, '0')}`;
     const fileName = (await window.ttool.invoke('notepad:create', name)) as string;
+    await syncRoutes();
     const list = await loadNotes();
     const newNote = list.find((n) => n.fileName === fileName);
     if (newNote) {
@@ -133,6 +170,7 @@ export default function Notepad() {
       contentRef.current = '';
       setActiveNote(newNote);
       setContent('');
+      window.location.hash = `/notepad/${encodeURIComponent(newNote.fileName)}`;
     }
     setTimeout(() => {
       switchingRef.current = false;
@@ -141,62 +179,44 @@ export default function Notepad() {
 
   const handleDelete = async (note: NoteItem) => {
     await window.ttool.invoke('notepad:delete', note.fileName);
+    await syncRoutes();
     const list = await loadNotes();
     if (activeNoteRef.current?.fileName === note.fileName) {
       if (list.length > 0) {
         selectNote(list[0]);
+        window.location.hash = `/notepad/${encodeURIComponent(list[0].fileName)}`;
       } else {
         activeNoteRef.current = null;
         setActiveNote(null);
         setContent('');
+        window.location.hash = '/notepad';
       }
     }
   };
 
-  const formatTime = (ms: number) => {
-    const d = new Date(ms);
-    return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
-  };
+  // 点击编辑区空白处时聚焦编辑器
+  const handleEditorAreaClick = useCallback((e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (!target.closest('[contenteditable]') && !target.closest('.mdxeditor-toolbar')) {
+      const ce = (e.currentTarget as HTMLElement).querySelector('[contenteditable="true"]');
+      if (ce instanceof HTMLElement) {
+        ce.focus();
+      }
+    }
+  }, []);
 
   return (
     <div className="notepad">
-      <aside className="notepad-sidebar">
-        <div className="sidebar-header">
-          <span className="sidebar-title">笔记</span>
-          <button className="btn-new" onClick={handleCreate} title="新建笔记">+</button>
-        </div>
-        <ul className="note-list">
-          {notes.map((note) => (
-            <li
-              key={note.fileName}
-              className={`note-item ${activeNote?.fileName === note.fileName ? 'active' : ''}`}
-              onClick={() => selectNote(note)}
-            >
-              <div className="note-item-info">
-                <span className="note-item-name">{note.name}</span>
-                <span className="note-item-time">{formatTime(note.updatedAt)}</span>
-              </div>
-              <button
-                className="btn-delete"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(note);
-                }}
-                title="删除"
-              >
-                &times;
-              </button>
-            </li>
-          ))}
-        </ul>
-      </aside>
-
-      <main className="notepad-editor">
+      <main className="notepad-editor" onClick={handleEditorAreaClick}>
         {activeNote ? (
           <>
             <div className="editor-header">
               <span className="editor-title">{activeNote.name}</span>
-              {isSaving && <span className="saving-hint">保存中...</span>}
+              <div className="editor-actions">
+                <button className="btn-new" onClick={handleCreate} title="新建笔记">+</button>
+                <button className="btn-delete-header" onClick={() => handleDelete(activeNote)} title="删除笔记">&times;</button>
+                {isSaving && <span className="saving-hint">保存中...</span>}
+              </div>
             </div>
             <MDXEditor
               key={activeNote.fileName}

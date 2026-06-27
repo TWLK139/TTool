@@ -5,122 +5,6 @@
   overflow: hidden;
 }
 
-/* 侧边栏 */
-.notepad-sidebar {
-  width: 220px;
-  min-width: 180px;
-  background: var(--bg-sidebar);
-  border-right: 1px solid var(--border-default);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-}
-
-.sidebar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border-default);
-}
-
-.sidebar-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-label);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.btn-new {
-  width: 28px;
-  height: 28px;
-  border: 1px solid var(--border-muted);
-  border-radius: 6px;
-  background: var(--bg-input);
-  color: var(--text-secondary);
-  font-size: 18px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-  line-height: 1;
-}
-
-.btn-new:hover {
-  background: var(--bg-input-hover);
-}
-
-.note-list {
-  list-style: none;
-  flex: 1;
-  overflow-y: auto;
-  padding: 4px 0;
-}
-
-.note-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  cursor: pointer;
-  transition: background 0.15s;
-  border-left: 3px solid transparent;
-}
-
-.note-item:hover {
-  background: var(--bg-elevated);
-}
-
-.note-item.active {
-  background: var(--bg-hover);
-  border-left-color: var(--accent);
-}
-
-.note-item-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  overflow: hidden;
-  flex: 1;
-}
-
-.note-item-name {
-  font-size: 13px;
-  color: var(--text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.note-item-time {
-  font-size: 11px;
-  color: var(--text-faint);
-}
-
-.btn-delete {
-  opacity: 0;
-  border: none;
-  background: none;
-  color: var(--text-muted);
-  font-size: 16px;
-  cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
-  transition: all 0.15s;
-  flex-shrink: 0;
-}
-
-.note-item:hover .btn-delete {
-  opacity: 1;
-}
-
-.btn-delete:hover {
-  color: var(--danger);
-  background: var(--danger-bg);
-}
-
 /* 编辑区 */
 .notepad-editor {
   flex: 1;
@@ -143,6 +27,54 @@
   font-size: 14px;
   font-weight: 500;
   color: var(--text-muted);
+}
+
+.editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-new {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border-muted);
+  border-radius: 6px;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  line-height: 1;
+}
+
+.btn-new:hover {
+  background: var(--bg-input-hover);
+}
+
+.btn-delete-header {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border-muted);
+  border-radius: 6px;
+  background: var(--bg-input);
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  line-height: 1;
+}
+
+.btn-delete-header:hover {
+  color: var(--danger);
+  background: var(--danger-bg);
+  border-color: var(--danger);
 }
 
 .saving-hint {
@@ -193,13 +125,74 @@
 
 .notepad-editor .mdxeditor-root-contenteditable {
   flex: 1;
-  padding: 16px 20px;
   overflow-y: auto;
   font-size: 14px;
   line-height: 1.7;
   color: var(--text-secondary);
+  counter-reset: line-number;
+}
+
+/* ref wrapper 填满滚动容器高度，让子级 min-height:100% 可解析 */
+.notepad-editor .mdxeditor-root-contenteditable > div {
+  height: 100%;
 }
 
 .editor-content {
   min-height: 100%;
+  padding: 16px 20px;
+  box-sizing: border-box;
+}
+
+/* ---- 行号 ---- */
+.notepad-editor .editor-content > p,
+.notepad-editor .editor-content > h1,
+.notepad-editor .editor-content > h2,
+.notepad-editor .editor-content > h3,
+.notepad-editor .editor-content > h4,
+.notepad-editor .editor-content > h5,
+.notepad-editor .editor-content > h6,
+.notepad-editor .editor-content > ul > li,
+.notepad-editor .editor-content > ol > li,
+.notepad-editor .editor-content > blockquote > p,
+.notepad-editor .editor-content > pre {
+  counter-increment: line-number;
+  position: relative;
+  padding-left: 40px;
+}
+
+/* 空段落（MDXEditor 初始占位 p）不显示行号、不计数 */
+.notepad-editor .editor-content > p:empty {
+  counter-increment: none;
+  padding-left: 0;
+}
+
+.notepad-editor .editor-content > p:empty::before {
+  content: none;
+}
+
+.notepad-editor .editor-content > p::before,
+.notepad-editor .editor-content > h1::before,
+.notepad-editor .editor-content > h2::before,
+.notepad-editor .editor-content > h3::before,
+.notepad-editor .editor-content > h4::before,
+.notepad-editor .editor-content > h5::before,
+.notepad-editor .editor-content > h6::before,
+.notepad-editor .editor-content > ul > li::before,
+.notepad-editor .editor-content > ol > li::before,
+.notepad-editor .editor-content > blockquote > p::before,
+.notepad-editor .editor-content > pre::before {
+  content: counter(line-number);
+  position: absolute;
+  left: 0;
+  width: 30px;
+  text-align: right;
+  color: var(--text-faint, #999);
+  font-size: 12px;
+  font-family: var(--font-mono, monospace);
+  line-height: inherit;
+  user-select: none;
+  pointer-events: none;
+  border-right: 1px solid var(--border-muted, #e0e0e0);
+  padding-right: 8px;
+  margin-right: 8px;
 }

@@ -1,7 +1,10 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import { app } from 'electron';
-import type { TToolPlugin, IpcHandler } from '@ttool/plugin-types';
+import type { TToolPlugin, IpcHandler, TToolHost } from '@ttool/plugin-types';
+
+// ===== 插件宿主引用（供 IPC handler 回调使用） =====
+let pluginHost: TToolHost | null = null;
 
 // ===== Notes 数据层 =====
 
@@ -89,7 +92,44 @@ const ipcHandlers: IpcHandler[] = [
       return true;
     },
   },
+  {
+    channel: 'notepad:sync-routes',
+    handler: async () => {
+      if (pluginHost) {
+        syncNoteRoutes(pluginHost);
+      }
+      return true;
+    },
+  },
 ];
+
+// ===== 二级路由同步 =====
+
+function syncNoteRoutes(host: TToolHost): void {
+  ensureNotesDir();
+  const dir = getNotesDir();
+  const files = fs.readdirSync(dir).filter((f) => f.endsWith('.md'));
+  const notes = files
+    .map((f) => {
+      const filePath = path.join(dir, f);
+      const stat = fs.statSync(filePath);
+      return {
+        name: f.replace(/\.md$/, ''),
+        fileName: f,
+        updatedAt: stat.mtimeMs,
+        createdAt: stat.birthtimeMs,
+      };
+    })
+    .sort((a, b) => b.createdAt - a.createdAt);
+
+  const subRoutes = notes.map((note, i) => ({
+    path: `/notepad/${encodeURIComponent(note.fileName)}`,
+    title: note.name,
+    order: i,
+  }));
+
+  host.registerSubRoutes('/notepad', subRoutes);
+}
 
 // ===== 插件定义 =====
 
@@ -106,12 +146,10 @@ const notepadPlugin: TToolPlugin = {
   ipcHandlers,
   activate(host) {
     console.log(`[notepad] 已激活`);
+    pluginHost = host;
 
-    // 示例：运行时注入二级路由
-    host.registerSubRoutes('/notepad', [
-      { path: '/notepad/all', title: '全部笔记', order: 0 },
-      { path: '/notepad/recent', title: '最近编辑', order: 1 },
-    ]);
+    // 初始同步笔记列表到二级路由
+    syncNoteRoutes(host);
 
     host.onReady(() => {
       console.log(`[notepad] 基座就绪`);
