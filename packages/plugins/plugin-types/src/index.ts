@@ -86,6 +86,66 @@ export interface TToolPlugin {
   deactivate?(): void;
 }
 
+// ===== 插件前端模块 =====
+
+/**
+ * 插件前端模块约定
+ *
+ * 每个插件的 `src/frontend/index.tsx` 必须默认导出一个 React 函数组件，
+ * 渲染进程通过 `@ttool/plugin-xxx/frontend` 子路径导入此组件。
+ *
+ * 约定格式：
+ * ```tsx
+ * // src/frontend/index.tsx
+ * export default function MyPluginPage() { ... }
+ * ```
+ *
+ * 对应的 package.json exports 配置：
+ * ```json
+ * { "exports": { "./frontend": "./src/frontend/index.tsx" } }
+ * ```
+ */
+
+/** 插件前端模块导出格式（渲染进程消费，default 为 React 函数组件） */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface PluginFrontendModule {
+  /** 默认导出：该插件对应的 React 页面组件（渲染进程侧断言为 React.ComponentType） */
+  default: any;
+}
+
+// ===== 渲染进程全局类型 =====
+
+/** 一级路由项（从主进程获取，渲染进程侧使用） */
+export interface NavRoute {
+  path: string;
+  title: string;
+  icon?: string;
+  order?: number;
+  children: SubRoute[];
+  standalone: boolean;
+}
+
+/** 渲染进程 window.ttool API 声明 */
+export interface TToolRendererAPI {
+  toggleAlwaysOnTop: (pin?: boolean) => Promise<boolean>;
+  getAlwaysOnTop: () => Promise<boolean>;
+  reload: () => Promise<void>;
+  openDevTools: () => Promise<void>;
+  minimize: () => Promise<void>;
+  maximize: () => Promise<void>;
+  close: () => Promise<void>;
+  isMaximized: () => Promise<boolean>;
+  routes: {
+    get: () => Promise<NavRoute[]>;
+    onUpdated: (callback: (routes: NavRoute[]) => void) => () => void;
+  };
+  plugin: {
+    openStandalone: (pluginName: string) => Promise<boolean>;
+  };
+  /** 通用 IPC 调用，用于调用插件注册的 handler */
+  invoke: (channel: string, ...args: unknown[]) => Promise<unknown>;
+}
+
 // ===== 插件注册配置（由 main 管理） =====
 
 /** 插件注册条目 */

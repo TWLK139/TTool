@@ -4,6 +4,10 @@
   "description": "TTool 示例插件",
   "private": true,
   "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./frontend": "./src/frontend/index.tsx"
+  },
   "scripts": {
     "build": "tsc",
     "clean": "rimraf dist"
@@ -12,6 +16,8 @@
     "@ttool/plugin-types": "workspace:*"
   },
   "devDependencies": {
+    "@types/react": "catalog:",
+    "react": "catalog:",
     "typescript": "catalog:"
   }
 }

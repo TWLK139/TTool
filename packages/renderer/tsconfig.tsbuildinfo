@@ -1,1 +1,1 @@
-{"root":["./src/app.tsx","./src/main.tsx","./src/types.ts","./src/vite-env.d.ts","./src/pages/example.tsx","./src/pages/notepad.tsx","./src/pages/welcome.tsx"],"version":"5.7.2"}
+{"root":["./src/app.tsx","./src/main.tsx","./src/plugin-registry.ts","./src/types.ts","./src/vite-env.d.ts","./src/contexts/themecontext.tsx","./src/pages/welcome.tsx"],"version":"5.7.2"}

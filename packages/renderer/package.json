@@ -10,8 +10,9 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@mdxeditor/editor": "^4.0.4",
     "@ttool/plugin-types": "workspace:*",
+    "@ttool/plugin-notepad": "workspace:*",
+    "@ttool/plugin-example": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

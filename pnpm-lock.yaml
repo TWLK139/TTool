@@ -73,16 +73,31 @@ importers:
         specifier: workspace:*
         version: link:../plugin-types
     devDependencies:
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.17
+      react:
+        specifier: 'catalog:'
+        version: 19.2.7
       typescript:
         specifier: 'catalog:'
         version: 5.7.2
 
   packages/plugins/plugin-notepad:
     dependencies:
+      '@mdxeditor/editor':
+        specifier: ^4.0.4
+        version: 4.0.4(@codemirror/language@6.12.3)(@lezer/highlight@1.2.3)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(yjs@13.6.31)
       '@ttool/plugin-types':
         specifier: workspace:*
         version: link:../plugin-types
     devDependencies:
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.17
+      react:
+        specifier: 'catalog:'
+        version: 19.2.7
       typescript:
         specifier: 'catalog:'
         version: 5.7.2
@@ -95,9 +110,12 @@ importers:
 
   packages/renderer:
     dependencies:
-      '@mdxeditor/editor':
-        specifier: ^4.0.4
-        version: 4.0.4(@codemirror/language@6.12.3)(@lezer/highlight@1.2.3)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(yjs@13.6.31)
+      '@ttool/plugin-example':
+        specifier: workspace:*
+        version: link:../plugins/plugin-example
+      '@ttool/plugin-notepad':
+        specifier: workspace:*
+        version: link:../plugins/plugin-notepad
       '@ttool/plugin-types':
         specifier: workspace:*
         version: link:../plugins/plugin-types

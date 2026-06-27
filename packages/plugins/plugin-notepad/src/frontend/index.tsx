@@ -27,6 +27,7 @@ import {
   Separator,
 } from '@mdxeditor/editor';
 import '@mdxeditor/editor/style.css';
+import './style.css';
 
 interface NoteItem {
   name: string;
@@ -43,6 +44,8 @@ export default function Notepad() {
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const editorRef = useRef(null);
   const activeNoteRef = useRef<NoteItem | null>(null);
+  const contentRef = useRef('');
+  const switchingRef = useRef(false);
 
   const loadNotes = useCallback(async () => {
     const list = (await window.ttool.invoke('notepad:list')) as NoteItem[];
@@ -59,20 +62,34 @@ export default function Notepad() {
   }, []);
 
   const selectNote = async (note: NoteItem) => {
+    if (activeNoteRef.current?.fileName === note.fileName) return;
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    // 标记正在切换，屏蔽 onChange 期间的自动保存
+    switchingRef.current = true;
     if (activeNoteRef.current) {
       await saveCurrentNote();
     }
-    activeNoteRef.current = note;
-    setActiveNote(note);
+    // 先异步加载新笔记内容，再同步更新 state，避免中间状态
     const text = (await window.ttool.invoke('notepad:read', note.fileName)) as string;
+    activeNoteRef.current = note;
+    contentRef.current = text;
+    // 同时更新 activeNote 和 content，确保 MDXEditor 挂载时拿到正确内容
+    setActiveNote(note);
     setContent(text);
+    // 延迟解除切换标记，确保 MDXEditor 完成初始化后的 onChange 不被误判
+    setTimeout(() => {
+      switchingRef.current = false;
+    }, 0);
   };
 
   const saveCurrentNote = async () => {
     if (!activeNoteRef.current) return;
     setIsSaving(true);
     try {
-      await window.ttool.invoke('notepad:save', activeNoteRef.current.fileName, content);
+      await window.ttool.invoke('notepad:save', activeNoteRef.current.fileName, contentRef.current);
       await loadNotes();
     } finally {
       setIsSaving(false);
@@ -80,27 +97,31 @@ export default function Notepad() {
   };
 
   const handleContentChange = (newContent: string) => {
+    // 切换笔记期间，MDXEditor 初始化触发的 onChange 应被忽略
+    if (switchingRef.current) return;
     setContent(newContent);
+    contentRef.current = newContent;
     if (saveTimerRef.current) {
       clearTimeout(saveTimerRef.current);
     }
+    // 在创建计时器时捕获当前 fileName，避免延迟读取 ref 导致保存到错误文件
+    const currentFileName = activeNoteRef.current?.fileName;
     saveTimerRef.current = setTimeout(() => {
-      if (activeNoteRef.current) {
-        window.ttool.invoke('notepad:save', activeNoteRef.current!.fileName, newContent);
+      if (currentFileName) {
+        window.ttool.invoke('notepad:save', currentFileName, newContent);
         loadNotes();
       }
     }, 500);
   };
 
   const handleCreate = async () => {
-    // 先保存当前笔记
-    if (activeNoteRef.current) {
-      await saveCurrentNote();
-    }
-    // 清除待执行的自动保存定时器，防止旧内容写入新笔记
     if (saveTimerRef.current) {
       clearTimeout(saveTimerRef.current);
       saveTimerRef.current = null;
+    }
+    switchingRef.current = true;
+    if (activeNoteRef.current) {
+      await saveCurrentNote();
     }
     const now = new Date();
     const name = `笔记 ${now.getMonth() + 1}-${now.getDate()} ${now.getHours()}.${String(now.getMinutes()).padStart(2, '0')}`;
@@ -109,9 +130,13 @@ export default function Notepad() {
     const newNote = list.find((n) => n.fileName === fileName);
     if (newNote) {
       activeNoteRef.current = newNote;
+      contentRef.current = '';
       setActiveNote(newNote);
       setContent('');
     }
+    setTimeout(() => {
+      switchingRef.current = false;
+    }, 0);
   };
 
   const handleDelete = async (note: NoteItem) => {

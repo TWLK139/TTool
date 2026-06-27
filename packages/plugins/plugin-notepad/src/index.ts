@@ -36,7 +36,7 @@ const ipcHandlers: IpcHandler[] = [
             createdAt: stat.birthtimeMs,
           };
         })
-        .sort((a, b) => b.updatedAt - a.updatedAt);
+        .sort((a, b) => b.createdAt - a.createdAt);
     },
   },
   {

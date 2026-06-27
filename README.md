@@ -55,14 +55,29 @@ TTool/
 │   ├── main/                    # Electron 主进程（基座）
 │   │   └── src/
 │   │       ├── index.ts         # 主进程入口
+│   │       ├── plugins.config.ts# 插件注册配置
 │   │       └── preload.ts       # 预加载脚本
 │   ├── renderer/                # React 渲染进程
 │   │   └── src/
-│   │       ├── App.tsx
+│   │       ├── App.tsx          # 应用外壳（导航 + 路由渲染）
+│   │       ├── plugin-registry.ts # 插件前端组件注册表
+│   │       ├── pages/
+│   │       │   └── Welcome.tsx  # 默认欢迎页（非插件）
 │   │       └── main.tsx
 │   └── plugins/                 # 插件目录
 │       ├── plugin-types/        # 插件类型定义
+│       ├── plugin-notepad/      # 记事本插件
+│       │   └── src/
+│       │       ├── index.ts     # 主进程逻辑（IPC、生命周期）
+│       │       └── frontend/    # 渲染进程逻辑
+│       │           ├── index.tsx# 页面组件（默认导出）
+│       │           └── style.css
 │       └── plugin-example/      # 示例插件
+│           └── src/
+│               ├── index.ts
+│               └── frontend/
+│                   ├── index.tsx
+│                   └── style.css
 ├── pnpm-workspace.yaml          # pnpm 工作区配置
 ├── turbo.json                   # Turborepo 任务编排
 ├── package.json                 # 根配置 + catalog 版本管理
@@ -140,6 +155,90 @@ pnpm clean
 - `alwaysOnTop: true` — 置顶模式，窗口始终保持在最前
 - `alwaysOnTop: false` — 普通模式，窗口行为与常规窗口一致
 - 支持快捷键 / 菜单栏一键切换
+
+## 架构强制约束
+
+以下规则是本项目插件架构的强制约束，任何新增或修改代码必须遵守。
+
+### 1. 插件是完整的独立模块
+
+每个插件必须同时包含**主进程逻辑**和**渲染进程逻辑**，两者共存于同一个插件包内：
+
+```
+plugin-xxx/
+  src/
+    index.ts          # 主进程：IPC handlers、生命周期
+    frontend/         # 渲染进程：页面组件、样式
+      index.tsx       # 默认导出 React 函数组件
+      style.css       # 插件私有样式
+```
+
+**禁止**将插件的 UI 组件放在 `renderer/src/pages/` 下。插件的全部代码（前端 + 后端）必须归属插件包自身。
+
+### 2. 前端组件通过 `./frontend` 子路径导出
+
+插件 `package.json` 必须声明 `exports` 字段，将 `./frontend` 子路径指向源码：
+
+```json
+{
+  "exports": {
+    ".": "./dist/index.js",
+    "./frontend": "./src/frontend/index.tsx"
+  }
+}
+```
+
+- `"."` — 主进程入口，编译为 CommonJS
+- `"./frontend"` — 渲染进程入口，由 Vite 直接处理 TSX 源码
+
+### 3. 渲染进程通过注册表加载插件组件
+
+`renderer/src/plugin-registry.ts` 是插件前端组件的唯一注册点。新增插件时：
+
+1. 在 `plugin-registry.ts` 中添加导入和路由映射
+2. 在 `main/src/plugins.config.ts` 中添加插件注册条目
+
+两处必须同步配置，缺一不可。
+
+### 4. 主进程构建排除前端目录
+
+插件 `tsconfig.json` 必须排除 `src/frontend`，因为前端代码由 Vite 处理，不经过 tsc 编译：
+
+```json
+{
+  "exclude": ["src/frontend"]
+}
+```
+
+### 5. 样式随插件走
+
+插件的私有 CSS 必须放在 `src/frontend/style.css` 中，由前端组件 `import './style.css'` 引入。
+
+**禁止**将插件专属样式写在 `renderer/src/styles/global.css` 中。`global.css` 仅保留：
+- CSS 重置与主题变量
+- 应用外壳布局（标题栏、导航栏、设置菜单）
+- 通用滚动条样式
+- 默认欢迎页样式
+
+### 6. 依赖归属原则
+
+- 插件专属依赖（如 `@mdxeditor/editor`）声明在插件包的 `dependencies` 中
+- 渲染进程不直接依赖插件专属的第三方包
+- 共享依赖（React、类型包）通过 `catalog:` 协议统一版本
+
+### 7. 新增插件 Checklist
+
+创建新插件时，必须完成以下所有步骤：
+
+- [ ] 在 `packages/plugins/` 下创建 `plugin-xxx/` 包
+- [ ] 实现 `src/index.ts`（主进程逻辑，导出 `TToolPlugin`）
+- [ ] 实现 `src/frontend/index.tsx`（默认导出 React 组件）
+- [ ] 编写 `src/frontend/style.css`（插件私有样式）
+- [ ] 配置 `package.json`（`exports`、依赖）
+- [ ] 配置 `tsconfig.json`（排除 `src/frontend`）
+- [ ] 在 `main/src/plugins.config.ts` 注册插件
+- [ ] 在 `renderer/src/plugin-registry.ts` 添加组件映射
+- [ ] 在 `renderer/vite.config.ts` 的 `optimizeDeps.include` 添加前端入口
 
 ## License
 

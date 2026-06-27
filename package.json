@@ -12,6 +12,7 @@
     "build:main": "turbo build --filter=@ttool/main",
     "pack": "turbo build --filter=@ttool/main --filter=@ttool/renderer && pnpm --filter @ttool/main run pack",
     "dist": "turbo build --filter=@ttool/main --filter=@ttool/renderer && pnpm --filter @ttool/main run dist",
+    "dev:full": "turbo build --filter=@ttool/plugin-types --filter=@ttool/plugin-notepad --filter=@ttool/plugin-example && turbo dev",
     "clean": "turbo clean"
   },
   "devDependencies": {

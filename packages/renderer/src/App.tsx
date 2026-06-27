@@ -1,15 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { NavRoute } from './types';
 import { useTheme } from './contexts/ThemeContext';
-import Notepad from './pages/Notepad';
-import Example from './pages/Example';
+import { pluginComponents } from './plugin-registry';
 import Welcome from './pages/Welcome';
-
-/** 路由路径 -> 渲染组件映射（内嵌插件） */
-const pluginComponents: Record<string, React.FC> = {
-  '/notepad': Notepad,
-  '/example': Example,
-};
 
 export default function App() {
   const [routes, setRoutes] = useState<NavRoute[]>([]);
