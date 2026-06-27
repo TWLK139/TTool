@@ -25,9 +25,14 @@ import {
   DiffSourceToggleWrapper,
   UndoRedo,
   Separator,
+  rootEditor$,
 } from '@mdxeditor/editor';
+import { useCellValue } from '@mdxeditor/gurx';
+import { $patchStyleText } from '@lexical/selection';
+import { $getSelection, $isRangeSelection } from 'lexical';
 import '@mdxeditor/editor/style.css';
 import './style.css';
+import { textStylePlugin } from './textStylePlugin';
 
 interface NoteItem {
   name: string;
@@ -44,6 +49,85 @@ function getFileNameFromHash(): string | null {
     return decodeURIComponent(hash.slice(prefix.length));
   }
   return null;
+}
+
+/** 文字颜色选择器按钮 */
+function ColorPickerButton() {
+  const rootEditor = useCellValue(rootEditor$);
+  const [color, setColor] = useState('#ff0000');
+
+  const applyColor = useCallback(() => {
+    if (!rootEditor) return;
+    rootEditor.update(() => {
+      const selection = $getSelection();
+      if ($isRangeSelection(selection)) {
+        $patchStyleText(selection, { color });
+      }
+    });
+  }, [rootEditor, color]);
+
+  return (
+    <div className="color-picker-btn" title="文字颜色">
+      <input
+        type="color"
+        value={color}
+        onChange={(e) => setColor(e.target.value)}
+      />
+      <button className="color-picker-apply" onClick={applyColor}>
+        <span className="color-indicator" style={{ color }}>A</span>
+      </button>
+    </div>
+  );
+}
+
+/** 背景色选择器按钮 */
+function BgColorPickerButton() {
+  const rootEditor = useCellValue(rootEditor$);
+  const [bgColor, setBgColor] = useState('#ffff00');
+
+  const applyBgColor = useCallback(() => {
+    if (!rootEditor) return;
+    rootEditor.update(() => {
+      const selection = $getSelection();
+      if ($isRangeSelection(selection)) {
+        $patchStyleText(selection, { 'background-color': bgColor });
+      }
+    });
+  }, [rootEditor, bgColor]);
+
+  return (
+    <div className="color-picker-btn" title="背景颜色">
+      <input
+        type="color"
+        value={bgColor}
+        onChange={(e) => setBgColor(e.target.value)}
+      />
+      <button className="color-picker-apply" onClick={applyBgColor}>
+        <span className="color-indicator" style={{ backgroundColor: bgColor }}>A</span>
+      </button>
+    </div>
+  );
+}
+
+/** 清除文字颜色 */
+function ClearColorButton() {
+  const rootEditor = useCellValue(rootEditor$);
+
+  const clearColor = useCallback(() => {
+    if (!rootEditor) return;
+    rootEditor.update(() => {
+      const selection = $getSelection();
+      if ($isRangeSelection(selection)) {
+        $patchStyleText(selection, { color: null, 'background-color': null });
+      }
+    });
+  }, [rootEditor]);
+
+  return (
+    <button className="color-clear-btn" onClick={clearColor} title="清除颜色">
+      A̸
+    </button>
+  );
 }
 
 export default function Notepad() {
@@ -239,6 +323,7 @@ export default function Notepad() {
                 codeBlockPlugin({ defaultCodeBlockLanguage: 'txt' }),
                 codeMirrorPlugin({ codeBlockLanguages: { js: 'JavaScript', css: 'CSS', txt: 'text', tsx: 'TypeScript', python: 'Python', html: 'HTML' } }),
                 diffSourcePlugin({ viewMode: 'rich-text', readOnlyDiff: false, diffMarkdown }),
+                textStylePlugin(),
                 toolbarPlugin({
                   toolbarContents: () => (
                     <>
@@ -255,6 +340,10 @@ export default function Notepad() {
                       <InsertTable />
                       <InsertThematicBreak />
                       <InsertCodeBlock />
+                      <Separator />
+                      <ColorPickerButton />
+                      <BgColorPickerButton />
+                      <ClearColorButton />
                       <Separator />
                       <DiffSourceToggleWrapper>
                         <></>
