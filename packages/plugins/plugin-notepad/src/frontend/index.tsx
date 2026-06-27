@@ -56,6 +56,7 @@ export default function Notepad() {
   const activeNoteRef = useRef<NoteItem | null>(null);
   const contentRef = useRef('');
   const switchingRef = useRef(false);
+  const [diffMarkdown, setDiffMarkdown] = useState('');
 
   const loadNotes = useCallback(async () => {
     const list = (await window.ttool.invoke('notepad:list')) as NoteItem[];
@@ -82,6 +83,7 @@ export default function Notepad() {
     contentRef.current = text;
     setActiveNote(note);
     setContent(text);
+    setDiffMarkdown(text);
     setTimeout(() => {
       switchingRef.current = false;
     }, 0);
@@ -170,6 +172,7 @@ export default function Notepad() {
       contentRef.current = '';
       setActiveNote(newNote);
       setContent('');
+      setDiffMarkdown('');
       window.location.hash = `/notepad/${encodeURIComponent(newNote.fileName)}`;
     }
     setTimeout(() => {
@@ -213,6 +216,7 @@ export default function Notepad() {
             <div className="editor-header">
               <span className="editor-title">{activeNote.name}</span>
               <div className="editor-actions">
+                <button className="btn-baseline" onClick={() => setDiffMarkdown(contentRef.current)} title="创建基线">⇓</button>
                 <button className="btn-new" onClick={handleCreate} title="新建笔记">+</button>
                 <button className="btn-delete-header" onClick={() => handleDelete(activeNote)} title="删除笔记">&times;</button>
                 {isSaving && <span className="saving-hint">保存中...</span>}
@@ -234,7 +238,7 @@ export default function Notepad() {
                 tablePlugin(),
                 codeBlockPlugin({ defaultCodeBlockLanguage: 'txt' }),
                 codeMirrorPlugin({ codeBlockLanguages: { js: 'JavaScript', css: 'CSS', txt: 'text', tsx: 'TypeScript', python: 'Python', html: 'HTML' } }),
-                diffSourcePlugin({ viewMode: 'rich-text', readOnlyDiff: false }),
+                diffSourcePlugin({ viewMode: 'rich-text', readOnlyDiff: false, diffMarkdown }),
                 toolbarPlugin({
                   toolbarContents: () => (
                     <>

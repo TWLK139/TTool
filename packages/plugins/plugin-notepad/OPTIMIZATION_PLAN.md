@@ -22,10 +22,10 @@
 const diffMarkdownRef = useRef('');
 ```
 
-#### 步骤 1.2：在笔记加载和保存时更新 `diffMarkdown`
+#### 步骤 1.2：在新增和删除按钮旁边增加一个新的按钮“创建基线”，当用户点击时更新 `diffMarkdown`
 
 - `selectNote` 加载笔记时，将读取到的内容存入 `diffMarkdownRef`
-- `saveCurrentNote` 保存完成后，将当前内容存入 `diffMarkdownRef`
+- `saveCurrentNote` 在用户点击创建基线按钮时，将当前内容存入 `diffMarkdownRef`
 - `handleCreate` 新建笔记时，`diffMarkdownRef` 重置为空字符串
 
 ```tsx
@@ -49,7 +49,7 @@ diffMarkdownRef.current = '';
 const [diffMarkdown, setDiffMarkdown] = useState('');
 ```
 
-在对应的加载/保存/新建位置同步调用 `setDiffMarkdown(...)`。
+在对应的加载/创建基线/新建位置同步调用 `setDiffMarkdown(...)`。
 
 更新 `diffSourcePlugin` 配置：
 
@@ -57,10 +57,12 @@ const [diffMarkdown, setDiffMarkdown] = useState('');
 diffSourcePlugin({ viewMode: 'rich-text', readOnlyDiff: false, diffMarkdown: diffMarkdown }),
 ```
 
+注意：创建基线按钮也需要按照当前的风格，用一个图标显示
+
 #### 步骤 1.4：验证
 
-1. 打开一个已有笔记 → 编辑内容 → 切换到 Diff 模式 → 应能看到与上次保存版本的差异
-2. 切换回富文本模式 → 编辑 → 保存 → 再切换 Diff → 差异应基于新保存的版本
+1. 打开一个已有笔记 → 编辑内容 → 点击创建基线按钮 → 切换到 Diff 模式 → 应能看到与上次保存版本的差异
+2. 切换回富文本模式 → 编辑 → 点击创建基线按钮 → 再切换 Diff → 差异应基于新保存的版本
 3. 新建笔记 → 切换 Diff → 无差异（基准为空）
 
 ---

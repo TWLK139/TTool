@@ -35,6 +35,26 @@
   gap: 6px;
 }
 
+.btn-baseline {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border-muted);
+  border-radius: 6px;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  line-height: 1;
+}
+
+.btn-baseline:hover {
+  background: var(--bg-input-hover);
+}
+
 .btn-new {
   width: 28px;
   height: 28px;
