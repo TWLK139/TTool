@@ -29,8 +29,8 @@ import {
   rootEditor$,
 } from '@mdxeditor/editor';
 import { useCellValue } from '@mdxeditor/gurx';
-import { $patchStyleText } from '@lexical/selection';
-import { $getSelection, $isRangeSelection } from 'lexical';
+import { $patchStyleText, $getSelectionStyleValueForProperty } from '@lexical/selection';
+import { $getSelection, $isRangeSelection, type RangeSelection, SELECTION_CHANGE_COMMAND } from 'lexical';
 import '@mdxeditor/editor/style.css';
 import './style.css';
 import { textStylePlugin } from './textStylePlugin';
@@ -68,13 +68,15 @@ function ColorPalettePopup({
   onCustomColorChange,
   onApply,
   onClose,
+  showNoColor,
 }: {
   anchorRef: React.RefObject<HTMLElement | null>;
   activeColor: string | null;
   customColor: string;
   onCustomColorChange: (c: string) => void;
-  onApply: (c: string) => void;
+  onApply: (c: string | null) => void;
   onClose: () => void;
+  showNoColor?: boolean;
 }) {
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
 
@@ -102,6 +104,15 @@ function ColorPalettePopup({
   return createPortal(
     <div className="color-palette-popup" style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 9999 }}>
       <div className="color-palette-grid">
+        {showNoColor && (
+          <button
+            className={`color-swatch no-color-swatch${activeColor === null || activeColor === 'transparent' ? ' active' : ''}`}
+            onClick={() => { onApply(null); onClose(); }}
+            title="无背景色"
+          >
+            <span className="no-color-line" />
+          </button>
+        )}
         {PRESET_COLORS.map((c) => (
           <button
             key={c}
@@ -132,31 +143,52 @@ function ColorPickerButton() {
   const [customColor, setCustomColor] = useState('#ff0000');
   const [activeColor, setActiveColor] = useState<string | null>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
+  const savedSelection = useRef<RangeSelection | null>(null);
 
-  // 监听选区变化，更新当前颜色状态
+  // 监听选区变化 + 内容变化，实时更新按钮状态
   useEffect(() => {
     if (!rootEditor) return;
-    return rootEditor.registerUpdateListener(({ editorState }) => {
-      editorState.read(() => {
-        const selection = $getSelection();
-        if ($isRangeSelection(selection)) {
-          const node = selection.getNodes()[0];
-          if (node && 'getStyle' in node) {
-            const style = (node as any).getStyle() as string;
-            const m = style.match(/(?:^|;)\s*color\s*:\s*([^;]+)/i);
-            setActiveColor(m ? m[1].trim() : null);
-          } else {
-            setActiveColor(null);
-          }
-        }
-      });
+    const readColor = () => {
+      const selection = $getSelection();
+      if ($isRangeSelection(selection)) {
+        const val = $getSelectionStyleValueForProperty(selection, 'color', '');
+        setActiveColor(val || null);
+      } else {
+        setActiveColor(null);
+      }
+    };
+    // 内容变化时更新
+    const unsubUpdate = rootEditor.registerUpdateListener(({ editorState }) => {
+      editorState.read(readColor);
     });
+    // 选区变化时更新（点击、键盘移动光标等）
+    const unsubSelection = rootEditor.registerCommand(
+      SELECTION_CHANGE_COMMAND,
+      () => { readColor(); return false; },
+      1,
+    );
+    return () => { unsubUpdate(); unsubSelection(); };
   }, [rootEditor]);
 
-  const applyColor = useCallback((color: string) => {
+  const handleOpen = useCallback(() => {
+    if (rootEditor) {
+      rootEditor.getEditorState().read(() => {
+        const sel = $getSelection();
+        if ($isRangeSelection(sel)) {
+          savedSelection.current = sel.clone() as RangeSelection;
+        }
+      });
+    }
+    setOpen((v) => !v);
+  }, [rootEditor]);
+
+  const applyColor = useCallback((color: string | null) => {
     if (!rootEditor) return;
     rootEditor.update(() => {
-      const selection = $getSelection();
+      let selection = $getSelection();
+      if ((!selection || !$isRangeSelection(selection)) && savedSelection.current) {
+        selection = savedSelection.current;
+      }
       if ($isRangeSelection(selection)) {
         $patchStyleText(selection, { color });
       }
@@ -169,7 +201,7 @@ function ColorPickerButton() {
       <button
         ref={btnRef}
         className={`color-trigger-btn${activeColor ? ' has-color' : ''}`}
-        onClick={() => setOpen(!open)}
+        onClick={handleOpen}
         title="文字颜色"
       >
         <span className="color-trigger-label">A</span>
@@ -196,30 +228,49 @@ function BgColorPickerButton() {
   const [customColor, setCustomColor] = useState('#ffff00');
   const [activeBg, setActiveBg] = useState<string | null>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
+  const savedSelection = useRef<RangeSelection | null>(null);
 
   useEffect(() => {
     if (!rootEditor) return;
-    return rootEditor.registerUpdateListener(({ editorState }) => {
-      editorState.read(() => {
-        const selection = $getSelection();
-        if ($isRangeSelection(selection)) {
-          const node = selection.getNodes()[0];
-          if (node && 'getStyle' in node) {
-            const style = (node as any).getStyle() as string;
-            const m = style.match(/(?:^|;)\s*background-color\s*:\s*([^;]+)/i);
-            setActiveBg(m ? m[1].trim() : null);
-          } else {
-            setActiveBg(null);
-          }
-        }
-      });
+    const readBg = () => {
+      const selection = $getSelection();
+      if ($isRangeSelection(selection)) {
+        const val = $getSelectionStyleValueForProperty(selection, 'background-color', '');
+        setActiveBg(val || null);
+      } else {
+        setActiveBg(null);
+      }
+    };
+    const unsubUpdate = rootEditor.registerUpdateListener(({ editorState }) => {
+      editorState.read(readBg);
     });
+    const unsubSelection = rootEditor.registerCommand(
+      SELECTION_CHANGE_COMMAND,
+      () => { readBg(); return false; },
+      1,
+    );
+    return () => { unsubUpdate(); unsubSelection(); };
   }, [rootEditor]);
 
-  const applyBgColor = useCallback((color: string) => {
+  const handleOpen = useCallback(() => {
+    if (rootEditor) {
+      rootEditor.getEditorState().read(() => {
+        const sel = $getSelection();
+        if ($isRangeSelection(sel)) {
+          savedSelection.current = sel.clone() as RangeSelection;
+        }
+      });
+    }
+    setOpen((v) => !v);
+  }, [rootEditor]);
+
+  const applyBgColor = useCallback((color: string | null) => {
     if (!rootEditor) return;
     rootEditor.update(() => {
-      const selection = $getSelection();
+      let selection = $getSelection();
+      if ((!selection || !$isRangeSelection(selection)) && savedSelection.current) {
+        selection = savedSelection.current;
+      }
       if ($isRangeSelection(selection)) {
         $patchStyleText(selection, { 'background-color': color });
       }
@@ -232,7 +283,7 @@ function BgColorPickerButton() {
       <button
         ref={btnRef}
         className={`color-trigger-btn bgcolor-trigger${activeBg ? ' has-color' : ''}`}
-        onClick={() => setOpen(!open)}
+        onClick={handleOpen}
         title="背景颜色"
       >
         <span className="color-trigger-label" style={{ backgroundColor: activeBg || 'transparent' }}>A</span>
@@ -245,30 +296,10 @@ function BgColorPickerButton() {
           onCustomColorChange={setCustomColor}
           onApply={applyBgColor}
           onClose={() => setOpen(false)}
+          showNoColor
         />
       )}
     </>
-  );
-}
-
-/** 清除文字颜色 */
-function ClearColorButton() {
-  const rootEditor = useCellValue(rootEditor$);
-
-  const clearColor = useCallback(() => {
-    if (!rootEditor) return;
-    rootEditor.update(() => {
-      const selection = $getSelection();
-      if ($isRangeSelection(selection)) {
-        $patchStyleText(selection, { color: null, 'background-color': null });
-      }
-    });
-  }, [rootEditor]);
-
-  return (
-    <button className="color-clear-btn" onClick={clearColor} title="清除颜色">
-      A̸
-    </button>
   );
 }
 
@@ -485,7 +516,6 @@ export default function Notepad() {
                       <Separator />
                       <ColorPickerButton />
                       <BgColorPickerButton />
-                      <ClearColorButton />
                       <Separator />
                       <DiffSourceToggleWrapper>
                         <></>

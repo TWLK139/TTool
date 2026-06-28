@@ -352,22 +352,21 @@
   background: var(--bg-input-hover);
 }
 
-.color-clear-btn {
-  width: 28px;
-  height: 28px;
-  border: 1px solid var(--border-muted);
-  border-radius: 4px;
+/* 无背景色色块 */
+.no-color-swatch {
+  position: relative;
   background: var(--bg-input);
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
+  outline: 1px solid var(--border-muted);
+  outline-offset: -1px;
 }
 
-.color-clear-btn:hover {
-  background: var(--bg-input-hover);
+.no-color-swatch .no-color-line {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60%;
+  height: 2px;
+  background: var(--danger, #e55);
+  transform: translate(-50%, -50%) rotate(-45deg);
+  border-radius: 1px;
 }
