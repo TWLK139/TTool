@@ -121,6 +121,9 @@ body.floatball-active {
 
 .titlebar-icon {
   font-size: 14px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
 }
 
 .titlebar-title {
@@ -181,10 +184,15 @@ body.floatball-active {
 
 .nav-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 8px;
   padding: 12px 14px;
   border-bottom: 1px solid var(--border-default);
+}
+
+.nav-logo {
+  color: var(--text-primary);
+  flex-shrink: 0;
 }
 
 .nav-header h1 {
@@ -433,6 +441,10 @@ body.floatball-active {
   color: var(--text-faint);
 }
 
+.welcome-logo {
+  color: var(--text-tertiary);
+}
+
 .welcome-page h2 {
   color: var(--text-label);
   font-size: 20px;
@@ -514,30 +526,33 @@ body.floatball-active {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: var(--accent);
+  background: radial-gradient(at 0% 100%, #22d3ee 0, transparent 50%), radial-gradient(at 0% 50%, #4c1d95 0, transparent 100%), #0f172a;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: grab;
-  box-shadow: 0 4px 12px rgba(108, 99, 255, 0.4);
+  /* box-shadow: 0 4px 12px rgba(108, 99, 255, 0.4); */
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   position: absolute;
 }
 
 .floatball:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(108, 99, 255, 0.6);
+  /* box-shadow: 0 6px 20px rgba(108, 99, 255, 0.6); */
 }
 
 .floatball.dragging {
   cursor: grabbing;
   transform: scale(1.15);
-  box-shadow: 0 8px 24px rgba(108, 99, 255, 0.7);
+  /* box-shadow: 0 8px 24px rgba(108, 99, 255, 0.7); */
 }
 
 .floatball-icon {
   font-size: 20px;
   color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .floatball-menu {

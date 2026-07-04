@@ -4,6 +4,7 @@ import { useTheme } from './contexts/ThemeContext';
 import { useDisplayMode } from './contexts/DisplayModeContext';
 import { pluginComponents } from './plugin-registry';
 import Welcome from './pages/Welcome';
+import LogoIcon from './LogoIcon';
 
 export default function App() {
   const [routes, setRoutes] = useState<NavRoute[]>([]);
@@ -252,7 +253,9 @@ export default function App() {
           onDoubleClick={handleFloatballDoubleClick}
           onContextMenu={handleFloatballRightClick}
         >
-          <span className="floatball-icon">⚡</span>
+          <span className="floatball-icon">
+            <LogoIcon width={28} height={28} />
+          </span>
         </div>
         {floatballMenuOpen && (
           <div ref={floatballMenuRef} className="floatball-menu">
@@ -292,7 +295,9 @@ export default function App() {
     <div className={`app ${mode}`}>
       <div className={`titlebar ${mode === 'minimal' && !showTitlebar ? 'hidden' : ''}`}>
         <div className="titlebar-drag">
-          <span className="titlebar-icon">⚡</span>
+          <span className="titlebar-icon">
+            <LogoIcon width={16} height={16} />
+          </span>
           <span className="titlebar-title">TTool</span>
         </div>
         <div className="titlebar-controls">
@@ -330,6 +335,7 @@ export default function App() {
       <div className="app-body">
         <nav className={`app-nav ${mode === 'minimal' ? 'hidden' : ''}`}>
           <div className="nav-header">
+            <LogoIcon width={22} height={22} className="nav-logo" />
             <h1>TTool</h1>
           </div>
           <ul className="nav-list">
