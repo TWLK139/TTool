@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TS对象转JSON工具</title>
+    <link rel="stylesheet" href="../../shared/styles.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 导航（由 shared/nav.js 自动渲染） -->
+        <div id="nav"></div>
+
+        <h1>TS对象转JSON</h1>
+        <p class="subtitle">将 TypeScript / JavaScript 对象字面量转换为标准 JSON</p>
+
+        <!-- 输入区 -->
+        <div class="card">
+            <div class="card-title"><span class="icon">📝</span> 输入TS/JS对象</div>
+            <label for="inputTs">粘贴 TypeScript 或 JavaScript 对象字面量：</label>
+            <textarea id="inputTs" placeholder="示例：&#10;[&#10;  { tabName: '上拍件数', count: 128, tabKey: 'product' },&#10;  { tabName: '资产推介数', count: -1, tabKey: 'tuijie' },&#10;]&#10;&#10;也支持：&#10;{ name: 'test', value: 123, enabled: true }"></textarea>
+            <div id="errorMsg" class="error-msg"></div>
+            <div id="successMsg" class="success-msg"></div>
+
+            <div class="options-row">
+                <div class="option-item">
+                    <input type="checkbox" id="optIndent" checked>
+                    <label for="optIndent" style="margin:0">格式化输出（缩进2空格）</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="optSortKeys">
+                    <label for="optSortKeys" style="margin:0">按键名排序</label>
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button class="btn-convert" onclick="convertToJson()">转换 → JSON</button>
+                <button class="btn-clear" onclick="clearAll()">清空</button>
+            </div>
+
+            <!-- 示例 -->
+            <div class="examples">
+                <label>快速示例（点击填入）：</label>
+                <div class="example-item" onclick="fillExample(0)">数组对象：[{ tabName: '上拍件数', count: 128, tabKey: 'product' }]</div>
+                <div class="example-item" onclick="fillExample(1)">嵌套对象：{ config: { name: 'test', items: [1, 2] } }</div>
+                <div class="example-item" onclick="fillExample(2)">混合类型：{ name: '张三', age: 25, active: true, tags: ['a', 'b'] }</div>
+            </div>
+        </div>
+
+        <!-- 结果区 -->
+        <div class="card" id="resultCard" style="display:none;">
+            <div class="card-title"><span class="icon">✅</span> 转换结果</div>
+            <div class="result-area">
+                <textarea id="outputJson" readonly style="min-height:160px; background:#fafbff;"></textarea>
+                <button class="btn-copy copy-btn" onclick="copyResult()">复制</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <!-- 公共脚本 -->
+    <script src="../../shared/pages.js"></script>
+    <script src="../../shared/nav.js"></script>
+    <script src="../../shared/ui.js"></script>
+    <!-- 本页脚本 -->
+    <script src="script.js"></script>
+</body>
+</html>

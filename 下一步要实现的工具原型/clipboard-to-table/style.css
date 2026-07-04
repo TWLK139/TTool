@@ -1,0 +1,233 @@
+/* ============================================================
+ * 剪贴板转表格 —— 页面特有样式
+ * 基础卡片 / 按钮 / toast 继承自 shared/styles.css
+ * ============================================================ */
+
+/* ---------- 本页加宽容器，容纳左右分栏 ---------- */
+.container { max-width: 1360px; }
+
+/* ---------- 左右分栏 ---------- */
+/* 左=输入、右=解析预览，中间是收起控制条。
+ * 右侧高度由 JS 跟随左侧输入区（syncPreviewHeight），避免转换出长表格后
+ * 右侧骤然变高、把下方「转换结果」挤到第二屏；超出部分在预览表内部滚动。
+ * 收起某侧时，另一侧占满整行（此时不再限高）。 */
+.split {
+    display: flex;
+    align-items: flex-start; /* 不相互撑高；右侧高度改由 JS 跟随左侧 */
+    gap: 0;
+}
+/* 每个 pane 做成纵向 flex，让其中的卡片撑满 pane 高度 */
+.pane {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+.pane .card {
+    flex: 1;
+    min-height: 0;      /* 允许内部滚动容器收缩 */
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 收起态：对应侧隐藏，另一侧自然填满剩余空间 */
+.split.collapse-input .pane-input { display: none; }
+.split.collapse-preview .pane-preview { display: none; }
+
+/* ---------- 中间收起控制条 ---------- */
+.divider {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 10px;
+    align-self: center;
+    justify-content: center;
+}
+.divider-btn {
+    width: 30px;
+    height: 44px;
+    padding: 0;
+    border-radius: 8px;
+    background: #fff;
+    color: #4a6cf7;
+    font-size: 18px;
+    line-height: 1;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.divider-btn:hover { background: #f0f4ff; }
+/* 收起后，用同一个按钮做「展开」，高亮提示 */
+.split.collapse-input #toggleInputBtn,
+.split.collapse-preview #togglePreviewBtn {
+    background: #4a6cf7;
+    color: #fff;
+}
+
+/* ---------- 预览区占位（未转换时） ---------- */
+.preview-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 240px;
+    color: #999;
+    font-size: 14px;
+    text-align: center;
+    border: 2px dashed #e3e3e3;
+    box-shadow: none;
+}
+
+/* ---------- 转换结果（通栏，位于分栏下方） ---------- */
+#resultCard { margin-top: 20px; }
+
+/* ---------- 窄屏回退为上下堆叠 ---------- */
+@media (max-width: 900px) {
+    .split { flex-direction: column; gap: 16px; }
+    .pane { display: block; width: 100%; flex-basis: auto; }
+    .pane .card { display: block; flex: 0 0 auto; }
+    .divider { flex-direction: row; align-self: center; padding: 0; }
+    .divider-btn { transform: rotate(90deg); }
+}
+
+/* ---------- 提示信息 ---------- */
+.error-msg {
+    display: none;
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: #fff0f0;
+    color: #f5576c;
+    border-radius: 8px;
+    font-size: 13px;
+}
+.error-msg.show { display: block; }
+
+/* ---------- 选项行 ---------- */
+.options-row {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 14px;
+}
+.option-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.option-item input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+.option-item input[type="number"] {
+    padding: 6px 8px;
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    font-size: 13px;
+}
+.option-item select {
+    padding: 6px 10px;
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+/* ---------- 解析提示（换行分列等） ---------- */
+.parse-note {
+    margin-top: 12px;
+    padding: 8px 12px;
+    background: #f0f4ff;
+    color: #4a6cf7;
+    border: 1px solid #d6e0ff;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* ---------- 按钮配色 ---------- */
+.btn-paste { background: #f0f4ff; color: #4a6cf7; }
+.btn-paste:hover { background: #e3ebff; }
+.btn-convert { background: #4a6cf7; color: #fff; }
+.btn-convert:hover { background: #3a5ce5; }
+.btn-clear { background: #f0f0f0; color: #666; }
+.btn-clear:hover { background: #e4e4e4; }
+
+/* ---------- 维度信息 ---------- */
+.dim-info {
+    font-size: 12px;
+    font-weight: 500;
+    color: #4a6cf7;
+    background: #f0f4ff;
+    padding: 2px 10px;
+    border-radius: 10px;
+    margin-left: 4px;
+}
+
+/* ---------- 预览表 ---------- */
+.preview-wrap {
+    flex: 1;                 /* 撑满预览卡片剩余高度 */
+    min-height: 0;           /* 关键：允许在 flex 容器内收缩，从而内部滚动 */
+    overflow: auto;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    margin-bottom: 0;
+}
+.preview-table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 13px;
+}
+.preview-table th, .preview-table td {
+    border: 1px solid #e8e8e8;
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+.preview-table th {
+    background: #f7f8fc;
+    font-weight: 600;
+    color: #333;
+    position: sticky;
+    top: 0;
+}
+.preview-table tbody tr:nth-child(even) { background: #fafbff; }
+
+/* ---------- 格式切换 tab ---------- */
+.format-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+.format-tab {
+    padding: 8px 20px;
+    background: #f0f0f0;
+    color: #666;
+    font-size: 13px;
+    border-radius: 8px;
+}
+.format-tab:hover { background: #e4e4e4; transform: none; box-shadow: none; }
+.format-tab.active { background: #4a6cf7; color: #fff; }
+
+/* ---------- Excel 提示 ---------- */
+.excel-hint {
+    font-size: 12px;
+    color: #b8860b;
+    background: #fffbe6;
+    border: 1px solid #ffe58f;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+/* ---------- 结果区 ---------- */
+.result-area { position: relative; }
+.result-btns {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+.copy-rich-btn { background: #f0f4ff; color: #4a6cf7; }
+.copy-rich-btn:hover { background: #e3ebff; }
+.download-btn { background: #e6fffb; color: #08979c; }
+.download-btn:hover { background: #d5fbf5; }

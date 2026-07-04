@@ -130,6 +130,7 @@
 /* MDXEditor 覆盖样式 */
 .notepad-editor .mdxeditor {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -145,6 +146,7 @@
 
 .notepad-editor .mdxeditor-root-contenteditable {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   font-size: 14px;
   line-height: 1.7;
@@ -155,6 +157,15 @@
 /* ref wrapper 填满滚动容器高度，让子级 min-height:100% 可解析 */
 .notepad-editor .mdxeditor-root-contenteditable > div {
   height: 100%;
+}
+
+/* diff-source-wrapper 也需要填满剩余高度并允许内部滚动 */
+.notepad-editor .mdxeditor-diff-source-wrapper {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .editor-content {
