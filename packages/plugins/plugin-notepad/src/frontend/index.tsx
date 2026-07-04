@@ -479,17 +479,25 @@ export default function Notepad() {
   }, []);
 
   const handleDelete = async (note: NoteItem) => {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    const isActiveNote = activeNoteRef.current?.fileName === note.fileName;
+    if (isActiveNote) {
+      activeNoteRef.current = null;
+    }
     await window.ttool.invoke('notepad:delete', note.fileName);
     await syncRoutes();
     const list = await loadNotes();
-    if (activeNoteRef.current?.fileName === note.fileName) {
+    if (isActiveNote) {
       if (list.length > 0) {
         selectNote(list[0]);
         window.location.hash = `/notepad/${encodeURIComponent(list[0].fileName)}`;
       } else {
-        activeNoteRef.current = null;
         setActiveNote(null);
         setContent('');
+        setDiffMarkdown('');
         window.location.hash = '/notepad';
       }
     }
@@ -537,7 +545,7 @@ export default function Notepad() {
               <div className="editor-actions">
                 <button className="btn-baseline" onClick={() => setDiffMarkdown(contentRef.current)} title="创建基线">⇓</button>
                 <button className="btn-new" onClick={handleCreate} title="新建笔记">+</button>
-                <button className="btn-delete-header" onClick={() => handleDelete(activeNote)} title="删除笔记">&times;</button>
+                <button className="btn-delete-header" onClick={() => { if (confirm(`确定删除「${activeNote.name}」吗？`)) handleDelete(activeNote); }} title="删除笔记">&times;</button>
                 {isSaving && <span className="saving-hint">保存中...</span>}
               </div>
             </div>
