@@ -376,10 +376,10 @@ export default function App() {
             </button>
             {settingsOpen && (
               <ul className="settings-menu">
-                <li className="settings-menu-item theme-item">
+                <li className="settings-menu-item-out theme-item">
                   <button
                     className="settings-menu-item"
-                    onClick={() => setThemeMenuOpen(!themeMenuOpen)}
+                    onClick={() => { setThemeMenuOpen(!themeMenuOpen); setModeMenuOpen(false); }}
                   >
                     {theme === 'dark' ? '🌙 深色模式' : '☀️ 浅色模式'}
                   </button>
@@ -406,10 +406,10 @@ export default function App() {
                     </ul>
                   )}
                 </li>
-                <li className="settings-menu-item mode-item">
+                <li className="settings-menu-item-out mode-item">
                   <button
                     className="settings-menu-item"
-                    onClick={() => setModeMenuOpen(!modeMenuOpen)}
+                    onClick={() => { setModeMenuOpen(!modeMenuOpen); setThemeMenuOpen(false); }}
                   >
                     {mode === 'normal' ? '📱 常规模式' : mode === 'minimal' ? '📐 简约模式' : '⚽ 浮球模式'}
                   </button>

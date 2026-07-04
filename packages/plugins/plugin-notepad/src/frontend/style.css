@@ -187,6 +187,38 @@
   --accentColor2: var(--accent-hover);
 }
 
+/* MDXEditor 深色模式：基座使用 data-theme="dark"，但 MDXEditor 依赖 .dark / .dark-theme 类，
+   因此需在深色模式下手动覆盖 MDXEditor 内部的 slate/blue 变量 */
+[data-theme="dark"] .notepad-editor .mdxeditor {
+  --basePageBg: var(--bg-base);
+
+  --slate-1: #111113;
+  --slate-2: #18191b;
+  --slate-3: #212225;
+  --slate-4: #272a2d;
+  --slate-5: #2e3135;
+  --slate-6: #363a3f;
+  --slate-7: #43484e;
+  --slate-8: #5a6169;
+  --slate-9: #696e77;
+  --slate-10: #777b84;
+  --slate-11: #b0b4ba;
+  --slate-12: #edeef0;
+
+  --blue-1: #0d1520;
+  --blue-2: #111927;
+  --blue-3: #0d2847;
+  --blue-4: #003362;
+  --blue-5: #004074;
+  --blue-6: #104d87;
+  --blue-7: #205d9e;
+  --blue-8: #2870bd;
+  --blue-9: #0090ff;
+  --blue-10: #3b9eff;
+  --blue-11: #70b8ff;
+  --blue-12: #c2e6ff;
+}
+
 .notepad-editor .mdxeditor-toolbar {
   background: var(--bg-elevated);
   border-bottom: 1px solid var(--border-default);
@@ -429,6 +461,39 @@
   background: var(--danger, #e55);
   transform: translate(-50%, -50%) rotate(-45deg);
   border-radius: 1px;
+}
+
+/* ===== CodeMirror 深色模式 ===== */
+[data-theme="dark"] .notepad-editor .cm-editor {
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .notepad-editor .cm-gutters {
+  background-color: transparent;
+  color: var(--text-faint);
+  border-right: none;
+}
+
+[data-theme="dark"] .notepad-editor .cm-content {
+  caret-color: var(--text-primary);
+}
+
+[data-theme="dark"] .notepad-editor .cm-cursor {
+  border-left-color: var(--text-primary);
+}
+
+[data-theme="dark"] .notepad-editor .cm-activeLine {
+  background-color: var(--bg-hover);
+}
+
+[data-theme="dark"] .notepad-editor .cm-selectionBackground,
+[data-theme="dark"] .notepad-editor .cm-focused .cm-selectionBackground {
+  background-color: var(--accent-bg);
+}
+
+[data-theme="dark"] .notepad-editor .cm-line {
+  color: var(--text-secondary);
 }
 
 /* ===== 简约模式 ===== */
