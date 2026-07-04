@@ -125,6 +125,9 @@ export interface NavRoute {
   standalone: boolean;
 }
 
+/** 显示模式类型 */
+export type DisplayMode = 'normal' | 'minimal' | 'floatball';
+
 /** 渲染进程 window.ttool API 声明 */
 export interface TToolRendererAPI {
   toggleAlwaysOnTop: (pin?: boolean) => Promise<boolean>;
@@ -144,6 +147,19 @@ export interface TToolRendererAPI {
   };
   /** 通用 IPC 调用，用于调用插件注册的 handler */
   invoke: (channel: string, ...args: unknown[]) => Promise<unknown>;
+  /** 显示模式相关 API */
+  displayMode: {
+    get: () => Promise<DisplayMode>;
+    set: (mode: DisplayMode, path?: string) => Promise<void>;
+    onChanged: (callback: (mode: DisplayMode, previousPath?: string) => void) => () => void;
+  };
+  /** 浮球模式相关 API */
+  floatball: {
+    moveWindow: (x: number, y: number) => Promise<void>;
+    expandWindow: (width: number, height: number) => Promise<void>;
+    restoreSize: () => Promise<void>;
+    getPreviousPath: () => Promise<string>;
+  };
 }
 
 // ===== 插件注册配置（由 main 管理） =====

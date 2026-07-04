@@ -1,6 +1,6 @@
-import type { NavRoute, TToolRendererAPI } from '@ttool/plugin-types';
+import type { NavRoute, TToolRendererAPI, DisplayMode } from '@ttool/plugin-types';
 
-export type { NavRoute } from '@ttool/plugin-types';
+export type { NavRoute, DisplayMode } from '@ttool/plugin-types';
 
 declare global {
   interface Window {

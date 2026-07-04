@@ -7,6 +7,10 @@ import type { TToolPlugin, TToolHost, SubRoute, PluginRegistryEntry } from '@tto
 
 let mainWindow: BrowserWindow | null = null;
 let isAlwaysOnTop = false;
+let currentDisplayMode: 'normal' | 'minimal' | 'floatball' = 'normal';
+let previousWindowBounds: Electron.Rectangle | null = null;
+let previousPinState = false;
+let previousPath = '';
 
 /** 运行时二级路由表：parentPath -> SubRoute[] */
 const runtimeSubRoutes: Map<string, SubRoute[]> = new Map();
@@ -28,6 +32,7 @@ function createMainWindow(): void {
     height: 680,
     alwaysOnTop: isAlwaysOnTop,
     frame: false,
+    transparent: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -286,6 +291,24 @@ ipcMain.handle('window:is-maximized', () => {
   return win?.isMaximized() ?? false;
 });
 
+// 设置窗口位置
+ipcMain.handle('window:set-position', (_event, x: number, y: number) => {
+  const win = BrowserWindow.getFocusedWindow();
+  if (win) {
+    win.setPosition(x, y);
+  }
+});
+
+// 获取窗口位置
+ipcMain.handle('window:get-position', () => {
+  const win = BrowserWindow.getFocusedWindow();
+  if (win) {
+    const bounds = win.getBounds();
+    return { x: bounds.x, y: bounds.y };
+  }
+  return { x: 0, y: 0 };
+});
+
 // 获取导航路由表（渲染进程启动时请求）
 ipcMain.handle('routes:get', () => {
   return getAllRoutes();
@@ -309,6 +332,82 @@ ipcMain.handle('plugin:open-standalone', (_event, pluginName: string) => {
   createStandaloneWindow(entry);
   return true;
 });
+
+// 显示模式相关 IPC
+
+ipcMain.handle('display-mode:get', () => {
+  return currentDisplayMode;
+});
+
+ipcMain.handle('display-mode:set', (_event, mode: 'normal' | 'minimal' | 'floatball', path?: string) => {
+  if (!mainWindow) return;
+
+  if (mode === 'floatball') {
+    previousWindowBounds = mainWindow.getBounds();
+    previousPinState = isAlwaysOnTop;
+    previousPath = path ?? '';
+
+    mainWindow.setAlwaysOnTop(true);
+    mainWindow.setBounds({
+      width: 60,
+      height: 60,
+      x: previousWindowBounds.x + (previousWindowBounds.width - 60) / 2,
+      y: previousWindowBounds.y + (previousWindowBounds.height - 60) / 2,
+    });
+  } else if (currentDisplayMode === 'floatball') {
+    if (previousWindowBounds) {
+      mainWindow.setBounds(previousWindowBounds);
+      mainWindow.setAlwaysOnTop(previousPinState);
+    }
+  }
+
+  currentDisplayMode = mode;
+
+  mainWindow.webContents.send('display-mode:changed', mode, previousPath);
+  standaloneWindows.forEach((win) => {
+    win.webContents.send('display-mode:changed', mode, previousPath);
+  });
+
+  hostEmit('display-mode-changed', mode);
+});
+
+ipcMain.handle('floatball:move-window', (_event, x: number, y: number) => {
+  if (!mainWindow || currentDisplayMode !== 'floatball') return;
+  mainWindow.setPosition(x, y);
+});
+
+ipcMain.handle('floatball:expand-window', (_event, width: number, height: number) => {
+  if (!mainWindow || currentDisplayMode !== 'floatball') return;
+
+  const bounds = mainWindow.getBounds();
+  mainWindow.setBounds({
+    width: width,
+    height: height,
+    x: Math.max(0, bounds.x - (width - bounds.width) / 2),
+    y: Math.max(0, bounds.y - (height - bounds.height) / 2),
+  });
+});
+
+ipcMain.handle('floatball:restore-size', () => {
+  if (!mainWindow || currentDisplayMode !== 'floatball') return;
+
+  const bounds = mainWindow.getBounds();
+  mainWindow.setBounds({
+    width: 60,
+    height: 60,
+    x: bounds.x + (bounds.width - 60) / 2,
+    y: bounds.y + (bounds.height - 60) / 2,
+  });
+});
+
+ipcMain.handle('floatball:get-previous-path', () => {
+  return previousPath;
+});
+
+function hostEmit(event: string, ...args: unknown[]): void {
+  const listeners = eventBus.get(event) ?? [];
+  listeners.forEach((fn) => fn(...args));
+}
 
 // ===== 应用启动 =====
 
