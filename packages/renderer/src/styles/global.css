@@ -455,18 +455,19 @@ body.floatball-active {
 
 .app.minimal .titlebar {
   position: fixed;
-  top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
+  /* pointer-events: none; */
+  /* -webkit-app-region: no-drag; */
+  -webkit-app-region: drag;
+  top: -100%;
+  transition: all 0.2s ease;
 }
 
 .app.minimal .titlebar:not(.hidden) {
-  opacity: 1;
-  pointer-events: auto;
+  top: 0;
+  
 }
 
 .app.minimal .app-body {

@@ -308,12 +308,16 @@ export default function Notepad() {
   const [activeNote, setActiveNote] = useState<NoteItem | null>(null);
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [displayMode, setDisplayMode] = useState<'normal' | 'minimal' | 'floatball'>('normal');
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const editorRef = useRef(null);
   const activeNoteRef = useRef<NoteItem | null>(null);
   const contentRef = useRef('');
   const switchingRef = useRef(false);
   const [diffMarkdown, setDiffMarkdown] = useState('');
+  const [editingName, setEditingName] = useState(false);
+  const [editNameValue, setEditNameValue] = useState('');
+  const editNameInputRef = useRef<HTMLInputElement>(null);
 
   const loadNotes = useCallback(async () => {
     const list = (await window.ttool.invoke('notepad:list')) as NoteItem[];
@@ -356,6 +360,15 @@ export default function Notepad() {
       setIsSaving(false);
     }
   }, [loadNotes]);
+
+  // 监听显示模式变化
+  useEffect(() => {
+    window.ttool?.displayMode.get().then(setDisplayMode);
+    const off = window.ttool?.displayMode.onChanged((mode) => {
+      setDisplayMode(mode);
+    });
+    return () => { off?.(); };
+  }, []);
 
   // 初始化：加载笔记列表，根据 URL hash 选择笔记
   useEffect(() => {
@@ -437,6 +450,34 @@ export default function Notepad() {
     }, 0);
   };
 
+  const handleRename = useCallback(async () => {
+    if (!activeNoteRef.current) return;
+    const newName = editNameValue.trim();
+    if (!newName || newName === activeNoteRef.current.name) {
+      setEditingName(false);
+      return;
+    }
+    const oldFileName = activeNoteRef.current.fileName;
+    const newFileName = `${newName}.md`;
+    await window.ttool.invoke('notepad:rename', oldFileName, newFileName);
+    await syncRoutes();
+    const list = await loadNotes();
+    const updated = list.find((n) => n.fileName === newFileName);
+    if (updated) {
+      activeNoteRef.current = updated;
+      setActiveNote(updated);
+      window.location.hash = `/notepad/${encodeURIComponent(newFileName)}`;
+    }
+    setEditingName(false);
+  }, [editNameValue, syncRoutes, loadNotes]);
+
+  const startEditName = useCallback(() => {
+    if (!activeNoteRef.current) return;
+    setEditNameValue(activeNoteRef.current.name);
+    setEditingName(true);
+    setTimeout(() => editNameInputRef.current?.focus(), 0);
+  }, []);
+
   const handleDelete = async (note: NoteItem) => {
     await window.ttool.invoke('notepad:delete', note.fileName);
     await syncRoutes();
@@ -465,13 +506,34 @@ export default function Notepad() {
     }
   }, []);
 
+  const isMinimal = displayMode === 'minimal';
+
   return (
-    <div className="notepad">
+    <div className={`notepad${isMinimal ? ' minimal' : ''}`}>
       <main className="notepad-editor" onClick={handleEditorAreaClick}>
         {activeNote ? (
           <>
             <div className="editor-header">
-              <span className="editor-title">{activeNote.name}</span>
+              <div className="editor-title-group">
+                {editingName ? (
+                  <input
+                    ref={editNameInputRef}
+                    className="editor-title-input"
+                    value={editNameValue}
+                    onChange={(e) => setEditNameValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleRename();
+                      if (e.key === 'Escape') setEditingName(false);
+                    }}
+                    onBlur={handleRename}
+                  />
+                ) : (
+                  <>
+                    <span className="editor-title">{activeNote.name}</span>
+                    <button className="btn-edit-name" onClick={startEditName} title="重命名">✎</button>
+                  </>
+                )}
+              </div>
               <div className="editor-actions">
                 <button className="btn-baseline" onClick={() => setDiffMarkdown(contentRef.current)} title="创建基线">⇓</button>
                 <button className="btn-new" onClick={handleCreate} title="新建笔记">+</button>

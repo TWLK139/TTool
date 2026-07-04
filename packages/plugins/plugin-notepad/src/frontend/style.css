@@ -21,18 +21,67 @@
   padding: 8px 16px;
   border-bottom: 1px solid var(--border-default);
   flex-shrink: 0;
+  -webkit-app-region: drag;
 }
 
 .editor-title {
   font-size: 14px;
   font-weight: 500;
   color: var(--text-muted);
+  -webkit-app-region: no-drag;
+}
+
+.editor-title-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.btn-edit-name {
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.editor-title-group:hover .btn-edit-name {
+  opacity: 1;
+}
+
+.btn-edit-name:hover {
+  background: var(--bg-input-hover);
+  color: var(--text-muted);
+}
+
+.editor-title-input {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-input);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 1px 6px;
+  outline: none;
+  min-width: 120px;
+  max-width: 300px;
 }
 
 .editor-actions {
   display: flex;
   align-items: center;
   gap: 6px;
+  -webkit-app-region: no-drag;
 }
 
 .btn-baseline {
@@ -380,4 +429,41 @@
   background: var(--danger, #e55);
   transform: translate(-50%, -50%) rotate(-45deg);
   border-radius: 1px;
+}
+
+/* ===== 简约模式 ===== */
+
+/* 隐藏行号：移除 padding-left、取消计数、隐藏 ::before 伪元素 */
+.notepad.minimal .editor-content > p,
+.notepad.minimal .editor-content > h1,
+.notepad.minimal .editor-content > h2,
+.notepad.minimal .editor-content > h3,
+.notepad.minimal .editor-content > h4,
+.notepad.minimal .editor-content > h5,
+.notepad.minimal .editor-content > h6,
+.notepad.minimal .editor-content > ul > li,
+.notepad.minimal .editor-content > ol > li,
+.notepad.minimal .editor-content > blockquote > p,
+.notepad.minimal .editor-content > pre {
+  padding-left: 0;
+  counter-increment: none;
+}
+
+.notepad.minimal .editor-content > p::before,
+.notepad.minimal .editor-content > h1::before,
+.notepad.minimal .editor-content > h2::before,
+.notepad.minimal .editor-content > h3::before,
+.notepad.minimal .editor-content > h4::before,
+.notepad.minimal .editor-content > h5::before,
+.notepad.minimal .editor-content > h6::before,
+.notepad.minimal .editor-content > ul > li::before,
+.notepad.minimal .editor-content > ol > li::before,
+.notepad.minimal .editor-content > blockquote > p::before,
+.notepad.minimal .editor-content > pre::before {
+  content: none;
+}
+
+/* 隐藏工具栏 */
+.notepad.minimal .mdxeditor-toolbar {
+  display: none;
 }

@@ -85,12 +85,16 @@ export default function App() {
   }, [mode]);
 
   useEffect(() => {
+    const TITLEBAR_HEIGHT = 32;
+    const TRIGGER_ZONE = 10;
     const handleMouseMove = (e: MouseEvent) => {
-      if (mode === 'minimal' && e.clientY < 10) {
+      if (mode !== 'minimal') return;
+      if (e.clientY < TRIGGER_ZONE) {
         setShowTitlebar(true);
-      } else if (mode === 'minimal' && e.clientY >= 10) {
+      } else if (e.clientY >= TITLEBAR_HEIGHT) {
         setShowTitlebar(false);
       }
+      // clientY 在 [TRIGGER_ZONE, TITLEBAR_HEIGHT) 范围内时保持当前状态
     };
 
     if (mode === 'minimal') {
