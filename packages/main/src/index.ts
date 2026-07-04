@@ -33,6 +33,7 @@ function createMainWindow(): void {
     alwaysOnTop: isAlwaysOnTop,
     frame: false,
     transparent: true,
+    icon: path.join(__dirname, '../build/icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -61,6 +62,7 @@ function createStandaloneWindow(entry: PluginRegistryEntry): BrowserWindow {
     height: entry.window?.height ?? 400,
     title: entry.window?.title ?? `TTool - ${entry.route.title}`,
     frame: false,
+    icon: path.join(__dirname, '../build/icon.png'),
     ...entry.window?.options,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),

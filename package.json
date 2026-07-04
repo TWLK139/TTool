@@ -16,6 +16,7 @@
     "clean": "turbo clean"
   },
   "devDependencies": {
+    "sharp": "^0.35.3",
     "turbo": "^2.5.0",
     "typescript": "catalog:"
   },
