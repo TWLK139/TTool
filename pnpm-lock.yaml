@@ -116,6 +116,9 @@ importers:
 
   packages/plugins/plugin-types:
     devDependencies:
+      electron:
+        specifier: 'catalog:'
+        version: 35.0.0
       typescript:
         specifier: 'catalog:'
         version: 5.7.2
