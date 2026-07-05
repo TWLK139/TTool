@@ -125,6 +125,35 @@ pnpm build:main
 pnpm clean
 ```
 
+### 远程打包（GitHub Actions）
+
+项目配置了 GitHub Actions CI，推送 `v*` 格式的 tag 即可自动构建 Windows（NSIS）和 macOS（DMG）安装包。
+
+```bash
+# 1. 提交代码
+git add .
+git commit -m "feat: xxx"
+
+# 2. 推送代码到 Gitee + GitHub（双远程同步）
+git push origin master
+
+# 3. 创建版本 tag
+git tag v0.1.0
+
+# 4. 推送 tag，触发 GitHub Actions 构建
+git push origin v0.1.0
+```
+
+推送 tag 后，前往 [GitHub Actions](https://github.com/TWLK139/TTool/actions) 查看构建进度。构建完成后安装包会自动发布到 [Releases](https://github.com/TWLK139/TTool/releases) 页面。
+
+> 如果需要重新触发同一版本的构建，先删除本地和远程 tag，再重新创建推送：
+> ```bash
+> git tag -d v0.1.0
+> git push origin :refs/tags/v0.1.0
+> git tag v0.1.0
+> git push origin v0.1.0
+> ```
+
 ## Monorepo 管理
 
 本项目使用以下工具链管理多包结构：
