@@ -2,6 +2,11 @@
   "name": "@ttool/main",
   "version": "0.1.0",
   "description": "TTool Electron 主进程（基座）",
+  "author": "TWLK",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TWLK139/TTool.git"
+  },
   "private": true,
   "main": "dist/index.js",
   "scripts": {
