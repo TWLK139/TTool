@@ -1,0 +1,25 @@
+{
+  "name": "@ttool/plugin-ts-to-json",
+  "version": "0.1.0",
+  "description": "TTool TS对象转JSON插件",
+  "private": true,
+  "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./frontend": "./src/frontend/index.tsx"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@ttool/plugin-types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:"
+  }
+}

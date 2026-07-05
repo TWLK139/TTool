@@ -51,6 +51,18 @@ const pluginConfig: PluginRegistry = {
       enabled: true,
       standalone: false,
     },
+    {
+      packageName: '@ttool/plugin-ts-to-json',
+      name: 'ts-to-json',
+      route: {
+        path: '/ts-to-json',
+        title: 'TS转JSON',
+        icon: '🔄',
+        order: 2,
+      },
+      enabled: true,
+      standalone: false,
+    },
   ],
 };
 

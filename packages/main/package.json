@@ -19,7 +19,9 @@
   "dependencies": {
     "@ttool/plugin-types": "workspace:*",
     "@ttool/plugin-notepad": "workspace:*",
-    "@ttool/plugin-example": "workspace:*"
+    "@ttool/plugin-example": "workspace:*",
+    "@ttool/plugin-clipboard-to-table": "workspace:*",
+    "@ttool/plugin-ts-to-json": "workspace:*"
   },
   "devDependencies": {
     "electron": "catalog:",

@@ -14,6 +14,7 @@
     "@ttool/plugin-notepad": "workspace:*",
     "@ttool/plugin-example": "workspace:*",
     "@ttool/plugin-clipboard-to-table": "workspace:*",
+    "@ttool/plugin-ts-to-json": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

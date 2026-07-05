@@ -50,12 +50,18 @@ importers:
 
   packages/main:
     dependencies:
+      '@ttool/plugin-clipboard-to-table':
+        specifier: workspace:*
+        version: link:../plugins/plugin-clipboard-to-table
       '@ttool/plugin-example':
         specifier: workspace:*
         version: link:../plugins/plugin-example
       '@ttool/plugin-notepad':
         specifier: workspace:*
         version: link:../plugins/plugin-notepad
+      '@ttool/plugin-ts-to-json':
+        specifier: workspace:*
+        version: link:../plugins/plugin-ts-to-json
       '@ttool/plugin-types':
         specifier: workspace:*
         version: link:../plugins/plugin-types
@@ -148,6 +154,28 @@ importers:
         specifier: 'catalog:'
         version: 5.7.2
 
+  packages/plugins/plugin-ts-to-json:
+    dependencies:
+      '@ttool/plugin-types':
+        specifier: workspace:*
+        version: link:../plugin-types
+    devDependencies:
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.17
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.2.3(@types/react@19.2.17)
+      react:
+        specifier: 'catalog:'
+        version: 19.2.7
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.7(react@19.2.7)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.7.2
+
   packages/plugins/plugin-types:
     devDependencies:
       electron:
@@ -168,6 +196,9 @@ importers:
       '@ttool/plugin-notepad':
         specifier: workspace:*
         version: link:../plugins/plugin-notepad
+      '@ttool/plugin-ts-to-json':
+        specifier: workspace:*
+        version: link:../plugins/plugin-ts-to-json
       '@ttool/plugin-types':
         specifier: workspace:*
         version: link:../plugins/plugin-types

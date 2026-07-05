@@ -1,0 +1,195 @@
+/* ===== TS-to-JSON ===== */
+
+.ttj {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 12px;
+  padding: 16px;
+}
+
+/* ===== Content Panels ===== */
+
+.ttj-content {
+  flex: 1;
+  display: flex;
+  gap: 12px;
+  min-height: 0;
+}
+
+.ttj-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg-surface);
+  min-width: 0;
+}
+
+.ttj-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-default);
+  background: var(--bg-elevated);
+  flex-shrink: 0;
+}
+
+.ttj-panel-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ttj-panel-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.ttj-action-btn {
+  padding: 3px 10px;
+  font-size: 12px;
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.ttj-action-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.ttj-action-btn.copied {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.ttj-action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ===== Textarea & Output ===== */
+
+.ttj-textarea {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.ttj-textarea::placeholder {
+  color: var(--text-faint);
+}
+
+.ttj-output {
+  flex: 1;
+  padding: 12px;
+  margin: 0;
+  overflow: auto;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+}
+
+/* ===== Options ===== */
+
+.ttj-options {
+  display: flex;
+  gap: 20px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border-default);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.ttj-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ttj-checkbox-label input[type="checkbox"] {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* ===== Messages ===== */
+
+.ttj-error {
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--color-danger, #f5576c);
+  border-top: 1px solid var(--border-default);
+  flex-shrink: 0;
+}
+
+.ttj-success {
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--color-success, #11998e);
+  border-top: 1px solid var(--border-default);
+  flex-shrink: 0;
+}
+
+/* ===== Examples ===== */
+
+.ttj-examples {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border-default);
+  flex-shrink: 0;
+}
+
+.ttj-examples-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.ttj-example-btn {
+  padding: 4px 8px;
+  font-size: 12px;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.ttj-example-btn:hover {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+}
