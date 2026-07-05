@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     strategy:
@@ -45,7 +48,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build & Package
-        run: pnpm dist -- --${{ matrix.platform }}
+        run: pnpm dist -- --${{ matrix.platform }} --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -62,8 +65,6 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
       - name: Download Windows artifact
