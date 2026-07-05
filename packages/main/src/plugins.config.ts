@@ -39,6 +39,18 @@ const pluginConfig: PluginRegistry = {
         height: 400,
       },
     },
+    {
+      packageName: '@ttool/plugin-clipboard-to-table',
+      name: 'clipboard-to-table',
+      route: {
+        path: '/clipboard-to-table',
+        title: '表格转换',
+        icon: '📋',
+        order: 1,
+      },
+      enabled: true,
+      standalone: false,
+    },
   ],
 };
 

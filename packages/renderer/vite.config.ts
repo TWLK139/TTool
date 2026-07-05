@@ -15,13 +15,8 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173,
+    port: 5400,
+    strictPort: false,
   },
-  // 插件前端源码通过 workspace 依赖引入，需确保 Vite 处理这些文件
-  optimizeDeps: {
-    include: [
-      '@ttool/plugin-notepad/frontend',
-      '@ttool/plugin-example/frontend',
-    ],
-  },
+  // 插件前端源码通过 workspace 依赖引入，Vite 通过正常模块解析处理，无需 optimizeDeps
 });

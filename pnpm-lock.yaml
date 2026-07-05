@@ -70,6 +70,28 @@ importers:
         specifier: 'catalog:'
         version: 5.7.2
 
+  packages/plugins/plugin-clipboard-to-table:
+    dependencies:
+      '@ttool/plugin-types':
+        specifier: workspace:*
+        version: link:../plugin-types
+    devDependencies:
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.17
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.2.3(@types/react@19.2.17)
+      react:
+        specifier: 'catalog:'
+        version: 19.2.7
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.7(react@19.2.7)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.7.2
+
   packages/plugins/plugin-example:
     dependencies:
       '@ttool/plugin-types':
@@ -137,6 +159,9 @@ importers:
 
   packages/renderer:
     dependencies:
+      '@ttool/plugin-clipboard-to-table':
+        specifier: workspace:*
+        version: link:../plugins/plugin-clipboard-to-table
       '@ttool/plugin-example':
         specifier: workspace:*
         version: link:../plugins/plugin-example

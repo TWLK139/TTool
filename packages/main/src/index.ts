@@ -42,7 +42,7 @@ function createMainWindow(): void {
   });
 
   if (!app.isPackaged) {
-    mainWindow.loadURL('http://localhost:5173');
+    mainWindow.loadURL('http://localhost:5400');
     mainWindow.webContents.openDevTools();
   } else {
     const rendererPath = path.join(process.resourcesPath, 'renderer/dist/index.html');
@@ -75,7 +75,7 @@ function createStandaloneWindow(entry: PluginRegistryEntry): BrowserWindow {
   const routePath = entry.route.path;
 
   if (!app.isPackaged) {
-    win.loadURL(`http://localhost:5173#${routePath}`);
+    win.loadURL(`http://localhost:5400#${routePath}`);
     win.webContents.openDevTools();
   } else {
     const rendererPath = path.join(process.resourcesPath, 'renderer/dist/index.html');

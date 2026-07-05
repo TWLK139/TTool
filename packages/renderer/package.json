@@ -13,6 +13,7 @@
     "@ttool/plugin-types": "workspace:*",
     "@ttool/plugin-notepad": "workspace:*",
     "@ttool/plugin-example": "workspace:*",
+    "@ttool/plugin-clipboard-to-table": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

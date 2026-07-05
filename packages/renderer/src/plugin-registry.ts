@@ -11,8 +11,10 @@ import type { PluginFrontendModule } from '@ttool/plugin-types';
  */
 import Notepad from '@ttool/plugin-notepad/frontend';
 import Example from '@ttool/plugin-example/frontend';
+import ClipboardToTable from '@ttool/plugin-clipboard-to-table/frontend';
 
 export const pluginComponents: Record<string, ComponentType> = {
   '/notepad': Notepad as PluginFrontendModule['default'],
   '/example': Example as PluginFrontendModule['default'],
+  '/clipboard-to-table': ClipboardToTable as PluginFrontendModule['default'],
 };
