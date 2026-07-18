@@ -487,16 +487,17 @@ body.floatball-active {
   left: 0;
   right: 0;
   z-index: 1000;
-  /* pointer-events: none; */
-  /* -webkit-app-region: no-drag; */
-  -webkit-app-region: drag;
+  -webkit-app-region: no-drag;
   top: -100%;
-  transition: all 0.2s ease;
+  transition: top 0.2s ease;
 }
 
 .app.minimal .titlebar:not(.hidden) {
   top: 0;
-  
+}
+
+.app.minimal .titlebar-drag {
+  -webkit-app-region: drag;
 }
 
 .app.minimal .app-body {

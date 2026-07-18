@@ -536,10 +536,7 @@ export default function Notepad() {
                     onBlur={handleRename}
                   />
                 ) : (
-                  <>
-                    <span className="editor-title">{activeNote.name}</span>
-                    <button className="btn-edit-name" onClick={startEditName} title="重命名">✎</button>
-                  </>
+                  <span className="editor-title" onClick={startEditName} title="点击重命名">{activeNote.name}</span>
                 )}
               </div>
               <div className="editor-actions">
