@@ -18,6 +18,8 @@ export default function App() {
   const [floatballMenuOpen, setFloatballMenuOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isTitlebarDragging, setIsTitlebarDragging] = useState(false);
+  const [titlebarDragStart, setTitlebarDragStart] = useState({ x: 0, y: 0 });
 
   const settingsRef = useRef<HTMLDivElement>(null);
   const floatballRef = useRef<HTMLDivElement>(null);
@@ -90,6 +92,7 @@ export default function App() {
     const TRIGGER_ZONE = 10;
     const handleMouseMove = (e: MouseEvent) => {
       if (mode !== 'minimal') return;
+      if (isTitlebarDragging) return; // 拖拽中不处理显隐
       if (e.clientY < TRIGGER_ZONE) {
         setShowTitlebar(true);
       } else if (e.clientY >= TITLEBAR_HEIGHT) {
@@ -105,7 +108,7 @@ export default function App() {
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [mode]);
+  }, [mode, isTitlebarDragging]);
 
   const handleTogglePin = async () => {
     const newState = await window.ttool?.toggleAlwaysOnTop();
@@ -224,6 +227,40 @@ export default function App() {
     };
   }, [isDragging, dragStart]);
 
+  // 简约模式标题栏拖拽（JS IPC 方式，绕过 CSS -webkit-app-region 在 transparent 窗口中的问题）
+  const handleTitlebarMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsTitlebarDragging(true);
+    setTitlebarDragStart({ x: e.screenX, y: e.screenY });
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isTitlebarDragging) return;
+      const deltaX = e.screenX - titlebarDragStart.x;
+      const deltaY = e.screenY - titlebarDragStart.y;
+      window.ttool?.invoke('window:get-position').then((pos) => {
+        const position = pos as { x: number; y: number };
+        window.ttool?.invoke('window:set-position', position.x + deltaX, position.y + deltaY);
+      });
+      setTitlebarDragStart({ x: e.screenX, y: e.screenY });
+    };
+
+    const handleMouseUp = () => {
+      setIsTitlebarDragging(false);
+    };
+
+    if (isTitlebarDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isTitlebarDragging, titlebarDragStart]);
+
   const sortedRoutes = [...routes].sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
 
   const activeRoute = sortedRoutes.find((r) => currentPath.startsWith(r.path));
@@ -294,7 +331,7 @@ export default function App() {
   return (
     <div className={`app ${mode}`}>
       <div className={`titlebar ${mode === 'minimal' && !showTitlebar ? 'hidden' : ''}`}>
-        <div className="titlebar-drag">
+        <div className={`titlebar-drag${isTitlebarDragging ? ' titlebar-dragging' : ''}`} onMouseDown={mode === 'minimal' ? handleTitlebarMouseDown : undefined}>
           <span className="titlebar-icon">
             <LogoIcon width={16} height={16} />
           </span>

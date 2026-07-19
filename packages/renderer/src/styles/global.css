@@ -486,18 +486,32 @@ body.floatball-active {
   position: fixed;
   left: 0;
   right: 0;
+  top: 0;
   z-index: 1000;
   -webkit-app-region: no-drag;
-  top: -100%;
-  transition: top 0.2s ease;
+  display: none;
 }
 
 .app.minimal .titlebar:not(.hidden) {
-  top: 0;
+  display: flex;
+  animation: minimal-titlebar-in 0.2s ease;
 }
 
 .app.minimal .titlebar-drag {
-  -webkit-app-region: drag;
+  cursor: grab;
+}
+
+.app.minimal .titlebar-drag.titlebar-dragging {
+  cursor: grabbing;
+}
+
+@keyframes minimal-titlebar-in {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 .app.minimal .app-body {
